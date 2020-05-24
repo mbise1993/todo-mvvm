@@ -1,6 +1,7 @@
+import { actionAsync, task } from 'mobx-utils';
+import { computed, observable } from 'mobx';
 import { injectable } from 'inversify';
 
-import { action, computed, observable } from 'mobx';
 import { TodoList } from '../../todo/models/todoList.model';
 import { ViewModel } from '../../common/viewModels';
 
@@ -20,26 +21,35 @@ export class AppViewModel extends ViewModel {
 
   @computed
   get itemsLeft() {
-    const items = this.todoList.items.filter(item => !item.data.isComplete);
+    const items = this.todoList.items.filter(item => !item.isCompleted);
     return items.length;
   }
 
-  @action
-  addItem() {
-    this.todoList.addItem(this.newItemText);
+  @actionAsync
+  async addItem() {
+    await task(this.todoList.addItem(this.newItemText));
     this.newItemText = '';
   }
 
-  @action
-  toggleAll() {
-    this.todoList.items.forEach(item => item.setComplete(!this.toggleAllChecked));
+  @actionAsync
+  async toggleAll() {
+    for (const item of this.todoList.items) {
+      await task(
+        item.update({
+          done: !this.toggleAllChecked,
+        }),
+      );
+    }
+
     this.toggleAllChecked = !this.toggleAllChecked;
   }
 
-  @action
-  clearCompletedItems() {
-    this.todoList.items
-      .filter(item => item.data.isComplete)
-      .forEach(item => this.todoList.deleteItem(item));
+  @actionAsync
+  async clearCompletedItems() {
+    for (const item of this.todoList.items) {
+      if (item.isCompleted) {
+        await item.delete();
+      }
+    }
   }
 }

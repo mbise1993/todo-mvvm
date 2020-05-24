@@ -1,8 +1,8 @@
 import { action, computed, observable } from 'mobx';
+import { actionAsync, task } from 'mobx-utils';
 import { injectable } from 'inversify';
 
 import { TodoItem } from '../models/todoItem.model';
-import { TodoList } from '../models/todoList.model';
 import { ViewModel } from '../../common/viewModels';
 
 interface IProps {
@@ -15,10 +15,6 @@ export class TodoItemViewModel extends ViewModel<IProps> {
 
   @observable editText = '';
   @observable isEditing = false;
-
-  constructor(private readonly todoList: TodoList) {
-    super();
-  }
 
   @computed
   get id() {
@@ -41,21 +37,30 @@ export class TodoItemViewModel extends ViewModel<IProps> {
     this.isEditing = true;
   }
 
-  @action
-  commitEditText() {
-    this.todoItem.updateDescription(this.editText);
+  @actionAsync
+  async commitEditText() {
+    await task(
+      this.todoItem.update({
+        task: this.editText,
+      }),
+    );
+
     this.editText = '';
     this.isEditing = false;
   }
 
-  @action
-  toggleComplete() {
-    this.todoItem.toggleComplete();
+  @actionAsync
+  async toggleComplete() {
+    await task(
+      this.todoItem.update({
+        done: !this.todoItem.isCompleted,
+      }),
+    );
   }
 
-  @action
-  deleteItem() {
-    this.todoList.deleteItem(this.todoItem);
+  @actionAsync
+  async deleteItem() {
+    await task(this.todoItem.delete());
   }
 
   protected initialize() {

@@ -1,4 +1,5 @@
-import { action, computed } from 'mobx';
+import { actionAsync, task } from 'mobx-utils';
+import { computed } from 'mobx';
 import { injectable } from 'inversify';
 
 import { Filter } from '../../common/utils/filiter';
@@ -28,8 +29,8 @@ export class TodoListViewModel extends ViewModel<Props> {
     }
   }
 
-  @action
-  deleteItem(item: TodoItem) {
-    this.todoList.deleteItem(item);
+  @actionAsync
+  async deleteItem(item: TodoItem) {
+    await task(item.delete());
   }
 }

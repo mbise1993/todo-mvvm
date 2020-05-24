@@ -1,0 +1,7 @@
+# import "./todoItemFields.graphql"
+
+mutation UpdateTodoItem($id: ID!, $input: UpdateTodoInput!) {
+  updateTodo(id: $id, input: $input) {
+    ...TodoItemFields
+  }
+}

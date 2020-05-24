@@ -1,7 +1,13 @@
 import { action, computed, observable } from 'mobx';
-import { ApolloQueryResult } from '@apollo/client';
+import { actionAsync, task } from 'mobx-utils';
+import { ApolloCache, ApolloQueryResult, FetchResult } from '@apollo/client';
 import { injectable } from 'inversify';
 
+import {
+  CreateTodoItem,
+  CreateTodoItemDocument,
+  CreateTodoItemVariables,
+} from '../api/CreateTodoItem.generated';
 import {
   GetTodoItems,
   GetTodoItemsDocument,
@@ -23,21 +29,21 @@ export class TodoList {
     return '1';
   }
 
-  @action
-  addItem(description: string) {
-    const lastItemId = this.items.reduce((_all, item) => parseInt(item.data.id), 1);
-    const newItem = new TodoItem({
-      id: (lastItemId + 1).toString(),
-      task: description,
-      done: false,
-    });
-
-    this.items.push(newItem);
-  }
-
-  @action
-  deleteItem(item: TodoItem) {
-    this.items.remove(item);
+  @actionAsync
+  async addItem(description: string) {
+    await task(
+      this.client.mutate<CreateTodoItem, CreateTodoItemVariables>({
+        mutation: CreateTodoItemDocument,
+        variables: {
+          input: {
+            user_id: '1',
+            task: description,
+            done: false,
+          },
+        },
+        update: (cache, result) => this.updateCacheAfterCreate(cache, result),
+      }),
+    );
   }
 
   @action
@@ -47,17 +53,43 @@ export class TodoList {
     });
 
     query.subscribe({
-      next: result => this.updateItems(result),
+      next: result => this.onNext(result),
     });
   }
 
   @action
-  private updateItems(result: ApolloQueryResult<GetTodoItems>) {
+  private updateCacheAfterCreate(
+    cache: ApolloCache<CreateTodoItem>,
+    result: FetchResult<CreateTodoItem>,
+  ) {
+    if (!result.data) {
+      return;
+    }
+
+    const cachedData = cache.readQuery<GetTodoItems, GetTodoItemsVariables>({
+      query: GetTodoItemsDocument,
+    });
+
+    if (!cachedData) {
+      return;
+    }
+
+    cache.writeQuery<GetTodoItems, GetTodoItemsVariables>({
+      query: GetTodoItemsDocument,
+      data: {
+        ...cachedData,
+        todos: [...cachedData.todos, result.data.createTodo],
+      },
+    });
+  }
+
+  @action
+  private onNext(result: ApolloQueryResult<GetTodoItems>) {
     if (!result.data?.todos) {
       return;
     }
 
-    const newItems = result.data.todos.map(todo => new TodoItem(todo!));
+    const newItems = result.data.todos.map(todo => new TodoItem(todo!, this.client));
     this.items.clear();
     this.items.push(...newItems);
   }

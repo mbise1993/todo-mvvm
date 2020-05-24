@@ -1,0 +1,7 @@
+# import "./todoItemFields.graphql"
+
+mutation CreateTodoItem($input: CreateTodoInput!) {
+  createTodo(input: $input) {
+    ...TodoItemFields
+  }
+}
