@@ -55,7 +55,7 @@ export class TodoItemViewModel extends ViewModel<IProps> {
 
   @action
   deleteItem() {
-    this.todoList.deleteTodoItem(this.todoItem);
+    this.todoList.deleteItem(this.todoItem);
   }
 
   protected initialize() {

@@ -7,6 +7,7 @@ import { ViewModel } from '../../common/viewModels';
 @injectable()
 export class AppPresenter extends ViewModel {
   @observable newItemText = '';
+  @observable toggleAllChecked = false;
 
   constructor(private readonly todoList: TodoList) {
     super();
@@ -31,13 +32,14 @@ export class AppPresenter extends ViewModel {
 
   @action
   toggleAll() {
-    this.todoList.items.forEach(item => item.toggleComplete());
+    this.todoList.items.forEach(item => item.setComplete(!this.toggleAllChecked));
+    this.toggleAllChecked = !this.toggleAllChecked;
   }
 
   @action
   clearCompletedItems() {
     this.todoList.items
       .filter(item => item.data.isComplete)
-      .forEach(item => this.todoList.deleteTodoItem(item));
+      .forEach(item => this.todoList.deleteItem(item));
   }
 }

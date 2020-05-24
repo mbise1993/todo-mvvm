@@ -26,12 +26,7 @@ export class TodoList extends Model<TodoListData> {
   }
 
   @action
-  completeAll() {
-    this.items.forEach(item => (item.data.isComplete = true));
-  }
-
-  @action
-  deleteTodoItem(item: TodoItem) {
+  deleteItem(item: TodoItem) {
     this.items.remove(item);
   }
 }

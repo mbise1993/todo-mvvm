@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router';
 
-import { getFilter } from '../../common/utils/filiter';
+import { getFilterFromPath } from '../../common/utils/filiter';
 
 interface Props {
   itemsLeft: number;
@@ -10,7 +10,7 @@ interface Props {
 
 export const TodoListFooter: React.FC<Props> = ({ itemsLeft, onClearCompletedClick }) => {
   const location = useLocation();
-  const filter = React.useMemo(() => getFilter(location.pathname), [location.pathname]);
+  const filter = React.useMemo(() => getFilterFromPath(location.pathname), [location.pathname]);
 
   return (
     <footer className="footer">

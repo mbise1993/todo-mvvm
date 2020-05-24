@@ -30,6 +30,6 @@ export class TodoListViewModel extends ViewModel<Props> {
 
   @action
   deleteItem(item: TodoItem) {
-    this.todoList.deleteTodoItem(item);
+    this.todoList.deleteItem(item);
   }
 }

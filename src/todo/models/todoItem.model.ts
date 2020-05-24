@@ -14,7 +14,12 @@ export class TodoItem extends Model<TodoItemData> {
   }
 
   @action
+  setComplete(value: boolean) {
+    this.data.isComplete = value;
+  }
+
+  @action
   toggleComplete() {
-    this.data.isComplete = !this.data.isComplete;
+    this.setComplete(!this.data.isComplete);
   }
 }

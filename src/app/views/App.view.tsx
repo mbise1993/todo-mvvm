@@ -36,7 +36,7 @@ export const AppView: React.FC = observer(() => {
             id="toggle-all"
             className="toggle-all"
             type="checkbox"
-            checked={vm.itemsLeft === 0}
+            checked={vm.toggleAllChecked}
             onChange={() => vm.toggleAll()}
           />
           <label htmlFor="toggle-all">Mark all as complete</label>
