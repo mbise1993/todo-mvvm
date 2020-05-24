@@ -1,13 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 
-import { AppPresenter } from '../presenters/app.presenter';
+import { AppViewModel } from '../viewModels/app.viewModel';
 import { TodoListFooter } from '../../todo/views/TodoListFooter.view';
 import { TodoListView } from '../../todo/views/TodoList.view';
 import { useViewModel } from '../../common/hooks';
 
 export const AppView: React.FC = observer(() => {
-  const vm = useViewModel(AppPresenter, null);
+  const vm = useViewModel(AppViewModel, null);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Enter

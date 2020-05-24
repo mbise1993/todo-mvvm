@@ -1,9 +1,9 @@
 import { ContainerModule } from 'inversify';
 
-import { AppPresenter } from './presenters/app.presenter';
+import { AppViewModel } from './viewModels/app.viewModel';
 
 export const appModule = new ContainerModule(bind => {
-  bind(AppPresenter)
+  bind(AppViewModel)
     .toSelf()
     .inTransientScope();
 });

@@ -5,7 +5,7 @@ import { TodoList } from '../../todo/models/todoList.model';
 import { ViewModel } from '../../common/viewModels';
 
 @injectable()
-export class AppPresenter extends ViewModel {
+export class AppViewModel extends ViewModel {
   @observable newItemText = '';
   @observable toggleAllChecked = false;
 
