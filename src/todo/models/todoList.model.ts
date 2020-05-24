@@ -1,16 +1,26 @@
-import { action, IObservableArray, observable } from 'mobx';
+import { action, computed, observable } from 'mobx';
+import { ApolloQueryResult } from '@apollo/client';
+import { injectable } from 'inversify';
 
-import { Model } from '../../common/models';
+import {
+  GetTodoItems,
+  GetTodoItemsDocument,
+  GetTodoItemsVariables,
+} from '../api/GetTodoItems.generated';
+import { GraphQlClient } from '../../common/services/graphQlClient';
 import { TodoItem } from './todoItem.model';
-import { TodoListData } from '../api/todoListData';
 
-export class TodoList extends Model<TodoListData> {
-  @observable items: IObservableArray<TodoItem>;
+@injectable()
+export class TodoList {
+  items = observable.array<TodoItem>([]);
 
-  constructor(data: TodoListData) {
-    super(data);
+  constructor(private readonly client: GraphQlClient) {
+    this.loadItems();
+  }
 
-    this.items = observable.array(this.data.items.map(item => new TodoItem(item)));
+  @computed
+  get id() {
+    return '1';
   }
 
   @action
@@ -18,8 +28,8 @@ export class TodoList extends Model<TodoListData> {
     const lastItemId = this.items.reduce((_all, item) => parseInt(item.data.id), 1);
     const newItem = new TodoItem({
       id: (lastItemId + 1).toString(),
-      description,
-      isComplete: false,
+      task: description,
+      done: false,
     });
 
     this.items.push(newItem);
@@ -28,5 +38,27 @@ export class TodoList extends Model<TodoListData> {
   @action
   deleteItem(item: TodoItem) {
     this.items.remove(item);
+  }
+
+  @action
+  private loadItems() {
+    const query = this.client.watchQuery<GetTodoItems, GetTodoItemsVariables>({
+      query: GetTodoItemsDocument,
+    });
+
+    query.subscribe({
+      next: result => this.updateItems(result),
+    });
+  }
+
+  @action
+  private updateItems(result: ApolloQueryResult<GetTodoItems>) {
+    if (!result.data?.todos) {
+      return;
+    }
+
+    const newItems = result.data.todos.map(todo => new TodoItem(todo!));
+    this.items.clear();
+    this.items.push(...newItems);
   }
 }

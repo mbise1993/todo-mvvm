@@ -1,6 +1,7 @@
 import { Container } from 'inversify';
 
 import { appModule } from './app/app.module';
+import { commonModule } from './common/common.module';
 import { todoModule } from './todo/todo.module';
 
 export const configureContainer = () => {
@@ -8,7 +9,7 @@ export const configureContainer = () => {
     skipBaseClassChecks: true,
   });
 
-  container.load(appModule, todoModule);
+  container.load(appModule, commonModule, todoModule);
 
   return container;
 };

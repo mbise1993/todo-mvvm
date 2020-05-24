@@ -22,17 +22,17 @@ export class TodoItemViewModel extends ViewModel<IProps> {
 
   @computed
   get id() {
-    return this.todoItem.data.id;
+    return this.todoItem.id;
   }
 
   @computed
   get description() {
-    return this.todoItem.data.description;
+    return this.todoItem.description;
   }
 
   @computed
   get isComplete() {
-    return this.todoItem.data.isComplete;
+    return this.todoItem.isCompleted;
   }
 
   @action

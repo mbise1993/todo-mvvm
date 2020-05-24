@@ -1,25 +1,40 @@
-import { action } from 'mobx';
+import { action, computed } from 'mobx';
 
 import { Model } from '../../common/models';
-import { TodoItemData } from '../api/todoItemData';
+import { TodoItemFields } from '../api/todoItemFields.generated';
 
-export class TodoItem extends Model<TodoItemData> {
-  constructor(data: TodoItemData) {
+export class TodoItem extends Model<TodoItemFields> {
+  constructor(data: TodoItemFields) {
     super(data);
+  }
+
+  @computed
+  get id() {
+    return this.data.id;
+  }
+
+  @computed
+  get description() {
+    return this.data.task;
+  }
+
+  @computed
+  get isCompleted() {
+    return this.data.done;
   }
 
   @action
   updateDescription(value: string) {
-    this.data.description = value;
+    this.data.task = value;
   }
 
   @action
   setComplete(value: boolean) {
-    this.data.isComplete = value;
+    this.data.done = value;
   }
 
   @action
   toggleComplete() {
-    this.setComplete(!this.data.isComplete);
+    this.setComplete(!this.data.done);
   }
 }

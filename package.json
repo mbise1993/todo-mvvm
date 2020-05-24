@@ -8,9 +8,13 @@
   "scripts": {
     "start": "parcel index.html",
     "build": "parcel index.html",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "graphql:generate": "graphql-codegen --config ./codegen.yml"
   },
   "dependencies": {
+    "@apollo/client": "^3.0.0-beta.50",
+    "@apollo/react-common": "^3.1.4",
+    "graphql": "^15.0.0",
     "inversify": "^5.0.1",
     "mobx": "^5.15.4",
     "mobx-react": "^6.2.2",

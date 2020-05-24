@@ -20,9 +20,9 @@ export class TodoListViewModel extends ViewModel<Props> {
   get items() {
     switch (this.props.filter) {
       case 'active':
-        return this.todoList.items.filter(item => !item.data.isComplete);
+        return this.todoList.items.filter(item => !item.data.done);
       case 'completed':
-        return this.todoList.items.filter(item => item.data.isComplete);
+        return this.todoList.items.filter(item => item.data.done);
       default:
         return this.todoList.items;
     }

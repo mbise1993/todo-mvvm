@@ -1,0 +1,7 @@
+# import "./todoItemFields.graphql"
+
+query GetTodoItems {
+  todos {
+    ...TodoItemFields
+  }
+}

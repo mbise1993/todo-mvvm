@@ -1,0 +1,35 @@
+overwrite: true
+schema: https://fakeql.com/graphql/8e0ce186bd13d85165e50444267c3f02
+documents: ./src/**/*.graphql
+hooks:
+  afterAllFileWrite:
+    - prettier --write
+generates:
+  src/graphql.generated.ts:
+    plugins:
+      - add: '/* eslint-disable */'
+      - typescript
+    config:
+      avoidOptionals: true
+  src/introspection.generated.ts:
+    plugins:
+      - add: '/* eslint-disable */'
+      - fragment-matcher
+  src/:
+    preset: near-operation-file
+    presetConfig:
+      baseTypesPath: graphql.generated.ts
+      extension: .generated.ts
+    plugins:
+      - add: '/* eslint-disable */'
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      avoidOptionals: true
+      exportFragmentSpreadSubTypes: true
+      omitOperationSuffix: true
+      preResolveTypes: true
+      reactApolloVersion: 2
+      withComponent: false
+      withHOC: false
+      withRefetchFn: true

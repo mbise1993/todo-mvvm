@@ -5,7 +5,9 @@ import { TodoList } from './models/todoList.model';
 import { TodoListViewModel } from './viewModels/todoList.viewModel';
 
 export const todoModule = new ContainerModule(bind => {
-  bind(TodoList).toConstantValue(new TodoList({ id: '1', items: [] }));
+  bind(TodoList)
+    .toSelf()
+    .inSingletonScope();
 
   bind(TodoItemViewModel)
     .toSelf()
