@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 
-import { TodoItem } from '../models/todoItem.model';
+import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemViewModel } from '../viewModels/todoItem.viewModel';
 import { useViewModel } from '../../common/hooks';
 
 interface Props {
-  todoItem: TodoItem;
+  todoItem: TodoItemFields;
 }
 
 export const TodoItemView: React.FC<Props> = observer(({ todoItem }) => {

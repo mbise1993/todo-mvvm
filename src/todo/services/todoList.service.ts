@@ -1,5 +1,4 @@
 import { action, computed, observable } from 'mobx';
-import { actionAsync, task } from 'mobx-utils';
 import { ApolloCache, ApolloQueryResult, FetchResult } from '@apollo/client';
 import { injectable } from 'inversify';
 
@@ -14,21 +13,17 @@ import {
   GetTodoItemsVariables,
 } from '../api/GetTodoItems.generated';
 import { GraphQlClient } from '../../common/services/graphQlClient';
-import { Mutation } from '../../common/services/mutation';
-import { Query } from '../../common/services/query';
-import { TodoItem } from './todoItem.model';
+import { GraphQlService } from '../../common/services/graphQlService';
+import { TodoItemFields } from '../api/todoItemFields.generated';
 
 @injectable()
-export class TodoList {
-  getItemsQuery: Query<GetTodoItems, GetTodoItemsVariables>;
-  addItemMutation: Mutation<CreateTodoItem, CreateTodoItemVariables>;
-  items = observable.array<TodoItem>([]);
+export class TodoListService extends GraphQlService {
+  items = observable.array<TodoItemFields>([]);
 
-  constructor(private readonly client: GraphQlClient) {
-    this.getItemsQuery = new Query(GetTodoItemsDocument, client);
-    this.addItemMutation = new Mutation(CreateTodoItemDocument, client);
+  constructor(client: GraphQlClient) {
+    super(client);
 
-    this.loadItems();
+    this.getItems.watch();
   }
 
   @computed
@@ -36,28 +31,15 @@ export class TodoList {
     return '1';
   }
 
-  @actionAsync
-  async addItem(description: string) {
-    await task(
-      this.addItemMutation.mutate({
-        variables: {
-          input: {
-            user_id: '1',
-            task: description,
-            done: false,
-          },
-        },
-        updateCache: (cache, result) => this.updateCacheAfterCreate(cache, result),
-      }),
-    );
-  }
+  getItems = this.createQuery<GetTodoItems, GetTodoItemsVariables>({
+    document: GetTodoItemsDocument,
+    onNext: result => this.onNext(result),
+  });
 
-  @action
-  private loadItems() {
-    this.getItemsQuery.watchQuery({
-      onNext: result => this.onNext(result),
-    });
-  }
+  addItem = this.createMutation<CreateTodoItem, CreateTodoItemVariables>({
+    document: CreateTodoItemDocument,
+    updateCache: (cache, result) => this.updateCacheAfterCreate(cache, result),
+  });
 
   @action
   private updateCacheAfterCreate(
@@ -91,8 +73,7 @@ export class TodoList {
       return;
     }
 
-    const newItems = result.data.todos.map(todo => new TodoItem(todo!, this.client));
     this.items.clear();
-    this.items.push(...newItems);
+    this.items.push(...(result.data.todos as any));
   }
 }

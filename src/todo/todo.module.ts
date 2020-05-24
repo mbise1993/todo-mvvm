@@ -1,11 +1,16 @@
 import { ContainerModule } from 'inversify';
 
+import { TodoItemService } from './services/todoItem.service';
 import { TodoItemViewModel } from './viewModels/todoItem.viewModel';
-import { TodoList } from './models/todoList.model';
+import { TodoListService } from './services/todoList.service';
 import { TodoListViewModel } from './viewModels/todoList.viewModel';
 
 export const todoModule = new ContainerModule(bind => {
-  bind(TodoList)
+  bind(TodoItemService)
+    .toSelf()
+    .inSingletonScope();
+
+  bind(TodoListService)
     .toSelf()
     .inSingletonScope();
 

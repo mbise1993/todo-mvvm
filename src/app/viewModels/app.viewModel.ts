@@ -2,7 +2,8 @@ import { actionAsync, task } from 'mobx-utils';
 import { computed, observable } from 'mobx';
 import { injectable } from 'inversify';
 
-import { TodoList } from '../../todo/models/todoList.model';
+import { TodoItemService } from '../../todo/services/todoItem.service';
+import { TodoListService } from '../../todo/services/todoList.service';
 import { ViewModel } from '../../common/viewModels';
 
 @injectable()
@@ -10,33 +11,53 @@ export class AppViewModel extends ViewModel {
   @observable newItemText = '';
   @observable toggleAllChecked = false;
 
-  constructor(private readonly todoList: TodoList) {
+  constructor(
+    private readonly todoListService: TodoListService,
+    private readonly todoItemService: TodoItemService,
+  ) {
     super();
   }
 
   @computed
   get hasItems() {
-    return this.todoList.items.length > 0;
+    return this.todoListService.items.length > 0;
   }
 
   @computed
   get itemsLeft() {
-    const items = this.todoList.items.filter(item => !item.isCompleted);
+    const items = this.todoListService.items.filter(item => !item.done);
     return items.length;
+  }
+
+  @computed
+  get completedItems() {
+    return this.todoListService.items.filter(item => item.done);
   }
 
   @actionAsync
   async addItem() {
-    await task(this.todoList.addItem(this.newItemText));
+    await task(
+      this.todoListService.addItem.execute({
+        input: {
+          user_id: '1',
+          task: this.newItemText,
+          done: false,
+        },
+      }),
+    );
+
     this.newItemText = '';
   }
 
   @actionAsync
   async toggleAll() {
-    for (const item of this.todoList.items) {
+    for (const item of this.todoListService.items) {
       await task(
-        item.update({
-          done: !this.toggleAllChecked,
+        this.todoItemService.updateItem.execute({
+          id: item.id,
+          input: {
+            done: !this.toggleAllChecked,
+          } as any,
         }),
       );
     }
@@ -46,10 +67,12 @@ export class AppViewModel extends ViewModel {
 
   @actionAsync
   async clearCompletedItems() {
-    for (const item of this.todoList.items) {
-      if (item.isCompleted) {
-        await item.delete();
-      }
+    for (const item of this.completedItems) {
+      await task(
+        this.todoItemService.deleteItem.execute({
+          id: item.id,
+        }),
+      );
     }
   }
 }

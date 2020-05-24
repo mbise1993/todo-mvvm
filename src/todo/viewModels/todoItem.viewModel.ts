@@ -2,19 +2,24 @@ import { action, computed, observable } from 'mobx';
 import { actionAsync, task } from 'mobx-utils';
 import { injectable } from 'inversify';
 
-import { TodoItem } from '../models/todoItem.model';
+import { TodoItemFields } from '../api/todoItemFields.generated';
+import { TodoItemService } from '../services/todoItem.service';
 import { ViewModel } from '../../common/viewModels';
 
 interface IProps {
-  todoItem: TodoItem;
+  todoItem: TodoItemFields;
 }
 
 @injectable()
 export class TodoItemViewModel extends ViewModel<IProps> {
-  private todoItem!: TodoItem;
+  private todoItem!: TodoItemFields;
 
   @observable editText = '';
   @observable isEditing = false;
+
+  constructor(private readonly todoItemService: TodoItemService) {
+    super();
+  }
 
   @computed
   get id() {
@@ -23,12 +28,12 @@ export class TodoItemViewModel extends ViewModel<IProps> {
 
   @computed
   get description() {
-    return this.todoItem.description;
+    return this.todoItem.task;
   }
 
   @computed
   get isComplete() {
-    return this.todoItem.isCompleted;
+    return this.todoItem.done;
   }
 
   @action
@@ -40,8 +45,11 @@ export class TodoItemViewModel extends ViewModel<IProps> {
   @actionAsync
   async commitEditText() {
     await task(
-      this.todoItem.update({
-        task: this.editText,
+      this.todoItemService.updateItem.execute({
+        id: this.todoItem.id,
+        input: {
+          task: this.editText,
+        } as any,
       }),
     );
 
@@ -52,15 +60,22 @@ export class TodoItemViewModel extends ViewModel<IProps> {
   @actionAsync
   async toggleComplete() {
     await task(
-      this.todoItem.update({
-        done: !this.todoItem.isCompleted,
+      this.todoItemService.updateItem.execute({
+        id: this.todoItem.id,
+        input: {
+          done: !this.todoItem.done,
+        } as any,
       }),
     );
   }
 
   @actionAsync
   async deleteItem() {
-    await task(this.todoItem.delete());
+    await task(
+      this.todoItemService.deleteItem.execute({
+        id: this.todoItem.id,
+      }),
+    );
   }
 
   protected initialize() {

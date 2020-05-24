@@ -3,8 +3,8 @@ import { computed } from 'mobx';
 import { injectable } from 'inversify';
 
 import { Filter } from '../../common/utils/filiter';
-import { TodoItem } from '../models/todoItem.model';
-import { TodoList } from '../models/todoList.model';
+import { TodoItemService } from '../services/todoItem.service';
+import { TodoListService } from '../services/todoList.service';
 import { ViewModel } from '../../common/viewModels';
 
 interface Props {
@@ -13,7 +13,10 @@ interface Props {
 
 @injectable()
 export class TodoListViewModel extends ViewModel<Props> {
-  constructor(private todoList: TodoList) {
+  constructor(
+    private readonly todoListService: TodoListService,
+    private readonly todoItemService: TodoItemService,
+  ) {
     super();
   }
 
@@ -21,16 +24,20 @@ export class TodoListViewModel extends ViewModel<Props> {
   get items() {
     switch (this.props.filter) {
       case 'active':
-        return this.todoList.items.filter(item => !item.data.done);
+        return this.todoListService.items.filter(item => !item.done);
       case 'completed':
-        return this.todoList.items.filter(item => item.data.done);
+        return this.todoListService.items.filter(item => item.done);
       default:
-        return this.todoList.items;
+        return this.todoListService.items;
     }
   }
 
   @actionAsync
-  async deleteItem(item: TodoItem) {
-    await task(item.delete());
+  async deleteItem(itemId: string) {
+    await task(
+      this.todoItemService.deleteItem.execute({
+        id: itemId,
+      }),
+    );
   }
 }
