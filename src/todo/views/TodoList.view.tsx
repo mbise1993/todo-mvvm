@@ -1,11 +1,17 @@
 import React from 'react';
+import { useLocation } from 'react-router';
 
+import { getFilter } from '../../common/utils/filiter';
+import { observer } from 'mobx-react';
 import { TodoItemView } from './TodoItem.view';
 import { TodoListViewModel } from '../viewModels/todoList.viewModel';
 import { useViewModel } from '../../common/hooks';
 
-export const TodoListView: React.FC = () => {
-  const vm = useViewModel(TodoListViewModel, null);
+export const TodoListView: React.FC = observer(() => {
+  const location = useLocation();
+  const vm = useViewModel(TodoListViewModel, {
+    filter: getFilter(location.pathname),
+  });
 
   return (
     <ul className="todo-list">
@@ -15,4 +21,4 @@ export const TodoListView: React.FC = () => {
       ))}
     </ul>
   );
-};
+});

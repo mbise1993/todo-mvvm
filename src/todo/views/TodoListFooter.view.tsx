@@ -1,4 +1,7 @@
 import React from 'react';
+import { useLocation } from 'react-router';
+
+import { getFilter } from '../../common/utils/filiter';
 
 interface Props {
   itemsLeft: number;
@@ -6,6 +9,9 @@ interface Props {
 }
 
 export const TodoListFooter: React.FC<Props> = ({ itemsLeft, onClearCompletedClick }) => {
+  const location = useLocation();
+  const filter = React.useMemo(() => getFilter(location.pathname), [location.pathname]);
+
   return (
     <footer className="footer">
       {/* <!-- This should be `0 items left` by default --> */}
@@ -15,15 +21,19 @@ export const TodoListFooter: React.FC<Props> = ({ itemsLeft, onClearCompletedCli
       {/* <!-- Remove this if you don't implement routing --> */}
       <ul className="filters">
         <li>
-          <a className="selected" href="#/">
+          <a className={filter === 'all' ? 'selected' : ''} href="#/">
             All
           </a>
         </li>
         <li>
-          <a href="#/active">Active</a>
+          <a className={filter === 'active' ? 'selected' : ''} href="#/active">
+            Active
+          </a>
         </li>
         <li>
-          <a href="#/completed">Completed</a>
+          <a className={filter === 'completed' ? 'selected' : ''} href="#/completed">
+            Completed
+          </a>
         </li>
       </ul>
       {/* <!-- Hidden if no completed items are left ↓ --> */}

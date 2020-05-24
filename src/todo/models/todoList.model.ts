@@ -14,6 +14,18 @@ export class TodoList extends Model<TodoListData> {
   }
 
   @action
+  addItem(description: string) {
+    const lastItemId = this.items.reduce((_all, item) => parseInt(item.data.id), 1);
+    const newItem = new TodoItem({
+      id: (lastItemId + 1).toString(),
+      description,
+      isComplete: false,
+    });
+
+    this.items.push(newItem);
+  }
+
+  @action
   completeAll() {
     this.items.forEach(item => (item.data.isComplete = true));
   }

@@ -6,8 +6,8 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "start": "parcel src/index.html",
-    "build": "parcel src/index.html",
+    "start": "parcel index.html",
+    "build": "parcel index.html",
     "test": "jest --watch"
   },
   "dependencies": {

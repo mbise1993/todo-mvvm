@@ -14,19 +14,40 @@ export const TodoItemView: React.FC<Props> = observer(({ todoItem }) => {
     todoItem,
   });
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    // Enter
+    if (e.keyCode === 13) {
+      vm.commitEditText();
+    }
+  };
+
+  let className = '';
+  if (vm.isEditing) {
+    className += 'editing';
+  }
+
+  if (vm.isComplete) {
+    className += ' complete';
+  }
+
   return (
-    <li className="completed">
+    <li className={className} onDoubleClick={() => vm.startEditing()}>
       <div className="view">
         <input
           className="toggle"
           type="checkbox"
           checked={vm.isComplete}
-          onClick={() => vm.toggleComplete()}
+          onChange={() => vm.toggleComplete()}
         />
         <label>{vm.description}</label>
-        <button className="destroy"></button>
+        <button className="destroy" onClick={() => vm.deleteItem()}></button>
       </div>
-      <input className="edit" value="Create a TodoMVC template" />
+      <input
+        className="edit"
+        value={vm.editText}
+        onChange={e => (vm.editText = e.target.value)}
+        onKeyDown={onKeyDown}
+      />
     </li>
   );
 });

@@ -11,5 +11,5 @@ export const useViewModel = <T extends ViewModel<any>>(type: Type<T>, props: T['
     const vm = container.resolve(type);
     vm.props = props;
     return vm;
-  }, []);
+  }, [JSON.stringify(props)]);
 };

@@ -1,7 +1,8 @@
-import { action, computed } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { injectable } from 'inversify';
 
 import { TodoItem } from '../models/todoItem.model';
+import { TodoList } from '../models/todoList.model';
 import { ViewModel } from '../../common/viewModels';
 
 interface IProps {
@@ -12,7 +13,10 @@ interface IProps {
 export class TodoItemViewModel extends ViewModel<IProps> {
   private todoItem!: TodoItem;
 
-  constructor() {
+  @observable editText = '';
+  @observable isEditing = false;
+
+  constructor(private readonly todoList: TodoList) {
     super();
   }
 
@@ -32,13 +36,26 @@ export class TodoItemViewModel extends ViewModel<IProps> {
   }
 
   @action
-  updateDescription(value: string) {
-    this.todoItem.updateDescription(value);
+  startEditing() {
+    this.editText = this.description;
+    this.isEditing = true;
+  }
+
+  @action
+  commitEditText() {
+    this.todoItem.updateDescription(this.editText);
+    this.editText = '';
+    this.isEditing = false;
   }
 
   @action
   toggleComplete() {
     this.todoItem.toggleComplete();
+  }
+
+  @action
+  deleteItem() {
+    this.todoList.deleteTodoItem(this.todoItem);
   }
 
   protected initialize() {
