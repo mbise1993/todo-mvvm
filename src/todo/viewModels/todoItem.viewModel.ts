@@ -6,12 +6,12 @@ import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
 import { ViewModel } from '../../common/viewModels';
 
-interface IProps {
+interface Props {
   todoItem: TodoItemFields;
 }
 
 @injectable()
-export class TodoItemViewModel extends ViewModel<IProps> {
+export class TodoItemViewModel extends ViewModel<Props> {
   private todoItem!: TodoItemFields;
 
   @observable editText = '';
@@ -78,7 +78,7 @@ export class TodoItemViewModel extends ViewModel<IProps> {
     );
   }
 
-  protected initialize() {
+  protected onDidReceiveProps() {
     this.todoItem = this.props.todoItem;
   }
 }

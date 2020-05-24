@@ -7,8 +7,10 @@ export abstract class ViewModel<TProps = unknown> {
 
   set props(props: TProps) {
     this._props = props;
-    this.initialize();
+    this.onDidReceiveProps();
   }
 
-  protected initialize() {}
+  onDidUnmount() {}
+
+  protected onDidReceiveProps() {}
 }

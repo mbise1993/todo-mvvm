@@ -3,10 +3,18 @@ import { ObservableMutation, ObservableMutationOptions } from './observableMutat
 import { ObservableQuery, ObservableQueryOptions } from './observableQuery';
 
 export abstract class GraphQlService {
+  private readonly queries: ObservableQuery<any, any>[] = [];
+
   constructor(protected readonly client: GraphQlClient) {}
 
+  dispose() {
+    this.queries.forEach(query => query.dispose());
+  }
+
   protected createQuery<TResult, TVariables>(options: ObservableQueryOptions<TResult>) {
-    return new ObservableQuery<TResult, TVariables>(this.client, options);
+    const query = new ObservableQuery<TResult, TVariables>(this.client, options);
+    this.queries.push(query);
+    return query;
   }
 
   protected createMutation<TResult, TVariables>(
