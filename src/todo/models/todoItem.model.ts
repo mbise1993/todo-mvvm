@@ -14,6 +14,7 @@ import {
 } from '../api/GetTodoItems.generated';
 import { GraphQlClient } from '../../common/services/graphQlClient';
 import { Model } from '../../common/models';
+import { Mutation } from '../../common/services/mutation';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import {
   UpdateTodoItem,
@@ -22,8 +23,14 @@ import {
 } from '../api/UpdateTodoItem.generated';
 
 export class TodoItem extends Model<TodoItemFields> {
-  constructor(data: TodoItemFields, private readonly client: GraphQlClient) {
+  updateMutation: Mutation<UpdateTodoItem, UpdateTodoItemVariables>;
+  deleteMutation: Mutation<DeleteTodoItem, DeleteTodoItemVariables>;
+
+  constructor(data: TodoItemFields, client: GraphQlClient) {
     super(data);
+
+    this.updateMutation = new Mutation(UpdateTodoItemDocument, client);
+    this.deleteMutation = new Mutation(DeleteTodoItemDocument, client);
   }
 
   @computed
@@ -44,19 +51,10 @@ export class TodoItem extends Model<TodoItemFields> {
   @actionAsync
   async update(input: Partial<UpdateTodoItemVariables['input']>) {
     await task(
-      this.client.mutate<UpdateTodoItem, UpdateTodoItemVariables>({
-        mutation: UpdateTodoItemDocument,
+      this.updateMutation.mutate({
         variables: {
           id: this.id,
           input: input as any,
-        },
-        optimisticResponse: {
-          __typename: 'Mutation',
-          updateTodo: {
-            id: this.id,
-            task: input.task || this.description,
-            done: input.done || this.isCompleted,
-          },
         },
       }),
     );
@@ -65,12 +63,11 @@ export class TodoItem extends Model<TodoItemFields> {
   @actionAsync
   async delete() {
     await task(
-      this.client.mutate<DeleteTodoItem, DeleteTodoItemVariables>({
-        mutation: DeleteTodoItemDocument,
+      this.deleteMutation.mutate({
         variables: {
           id: this.id,
         },
-        update: cache => this.updateCacheAfterDelete(cache),
+        updateCache: cache => this.updateCacheAfterDelete(cache),
       }),
     );
   }

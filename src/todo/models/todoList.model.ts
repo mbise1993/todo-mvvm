@@ -14,13 +14,20 @@ import {
   GetTodoItemsVariables,
 } from '../api/GetTodoItems.generated';
 import { GraphQlClient } from '../../common/services/graphQlClient';
+import { Mutation } from '../../common/services/mutation';
+import { Query } from '../../common/services/query';
 import { TodoItem } from './todoItem.model';
 
 @injectable()
 export class TodoList {
+  getItemsQuery: Query<GetTodoItems, GetTodoItemsVariables>;
+  addItemMutation: Mutation<CreateTodoItem, CreateTodoItemVariables>;
   items = observable.array<TodoItem>([]);
 
   constructor(private readonly client: GraphQlClient) {
+    this.getItemsQuery = new Query(GetTodoItemsDocument, client);
+    this.addItemMutation = new Mutation(CreateTodoItemDocument, client);
+
     this.loadItems();
   }
 
@@ -32,8 +39,7 @@ export class TodoList {
   @actionAsync
   async addItem(description: string) {
     await task(
-      this.client.mutate<CreateTodoItem, CreateTodoItemVariables>({
-        mutation: CreateTodoItemDocument,
+      this.addItemMutation.mutate({
         variables: {
           input: {
             user_id: '1',
@@ -41,19 +47,15 @@ export class TodoList {
             done: false,
           },
         },
-        update: (cache, result) => this.updateCacheAfterCreate(cache, result),
+        updateCache: (cache, result) => this.updateCacheAfterCreate(cache, result),
       }),
     );
   }
 
   @action
   private loadItems() {
-    const query = this.client.watchQuery<GetTodoItems, GetTodoItemsVariables>({
-      query: GetTodoItemsDocument,
-    });
-
-    query.subscribe({
-      next: result => this.onNext(result),
+    this.getItemsQuery.watchQuery({
+      onNext: result => this.onNext(result),
     });
   }
 

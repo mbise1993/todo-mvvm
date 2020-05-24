@@ -26,7 +26,7 @@ const isShallowEqual = (a: any, b: any) => {
   return length === Object.keys(b).length;
 };
 
-export const useViewModel = <T extends ViewModel<any>>(type: Type<T>, props: T['props']) => {
+export const useViewModel = <T extends ViewModel<any>>(type: Type<T>, props: T['props']): T => {
   const container = useContainer();
   const previousProps = React.useRef<T['props']>();
 
