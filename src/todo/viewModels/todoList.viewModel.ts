@@ -1,8 +1,8 @@
-import { actionAsync, task } from 'mobx-utils';
-import { computed } from 'mobx';
 import { injectable } from 'inversify';
 
+import { BehaviorSubject } from 'rxjs';
 import { Filter } from '../../common/utils/filiter';
+import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
 import { TodoListService } from '../services/todoList.service';
 import { ViewModel } from '../../common/viewModels';
@@ -13,6 +13,8 @@ interface Props {
 
 @injectable()
 export class TodoListViewModel extends ViewModel<Props> {
+  items = new BehaviorSubject<TodoItemFields[]>([]);
+
   constructor(
     private readonly todoListService: TodoListService,
     private readonly todoItemService: TodoItemService,
@@ -20,24 +22,32 @@ export class TodoListViewModel extends ViewModel<Props> {
     super();
   }
 
-  @computed
-  get items() {
-    switch (this.props.filter) {
-      case 'active':
-        return this.todoListService.items.filter(item => !item.done);
-      case 'completed':
-        return this.todoListService.items.filter(item => item.done);
-      default:
-        return this.todoListService.items;
-    }
+  async deleteItem(itemId: string) {
+    await this.todoItemService.deleteItem.execute({
+      id: itemId,
+    });
   }
 
-  @actionAsync
-  async deleteItem(itemId: string) {
-    await task(
-      this.todoItemService.deleteItem.execute({
-        id: itemId,
-      }),
-    );
+  protected onInit() {
+    this.todoListService.items.subscribe(items => {
+      this.filterItems(items);
+    });
+  }
+
+  protected onPropsChanged() {
+    this.filterItems(this.items.value);
+  }
+
+  private filterItems(items: TodoItemFields[]) {
+    switch (this.props.filter) {
+      case 'active':
+        this.items.next(items.filter(item => !item.done));
+        break;
+      case 'completed':
+        this.items.next(items.filter(item => item.done));
+        break;
+      default:
+        this.items.next(items);
+    }
   }
 }

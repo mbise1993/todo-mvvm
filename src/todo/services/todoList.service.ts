@@ -1,5 +1,5 @@
-import { action, computed, observable } from 'mobx';
 import { ApolloCache, ApolloQueryResult, FetchResult } from '@apollo/client';
+import { BehaviorSubject } from 'rxjs';
 import { injectable } from 'inversify';
 
 import {
@@ -18,7 +18,7 @@ import { TodoItemFields } from '../api/todoItemFields.generated';
 
 @injectable()
 export class TodoListService extends GraphQlService {
-  items = observable.array<TodoItemFields>([]);
+  readonly items = new BehaviorSubject<TodoItemFields[]>([]);
 
   constructor(client: GraphQlClient) {
     super(client);
@@ -26,7 +26,6 @@ export class TodoListService extends GraphQlService {
     this.getItems.watch();
   }
 
-  @computed
   get id() {
     return '1';
   }
@@ -41,7 +40,6 @@ export class TodoListService extends GraphQlService {
     updateCache: (cache, result) => this.updateCacheAfterCreate(cache, result),
   });
 
-  @action
   private updateCacheAfterCreate(
     cache: ApolloCache<CreateTodoItem>,
     result: FetchResult<CreateTodoItem>,
@@ -67,13 +65,11 @@ export class TodoListService extends GraphQlService {
     });
   }
 
-  @action
   private onNext(result: ApolloQueryResult<GetTodoItems>) {
     if (!result.data?.todos) {
       return;
     }
 
-    this.items.clear();
-    this.items.push(...(result.data.todos as any));
+    this.items.next(result.data.todos as any);
   }
 }

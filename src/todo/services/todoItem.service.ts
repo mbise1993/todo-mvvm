@@ -1,4 +1,3 @@
-import { action } from 'mobx';
 import { ApolloCache } from '@apollo/client';
 import { injectable } from 'inversify';
 
@@ -35,7 +34,6 @@ export class TodoItemService extends GraphQlService {
     updateCache: (cache, _result, variables) => this.updateCacheAfterDelete(cache, variables),
   });
 
-  @action
   private updateCacheAfterDelete(
     cache: ApolloCache<DeleteTodoItem>,
     variables?: DeleteTodoItemVariables,

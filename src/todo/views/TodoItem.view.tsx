@@ -1,28 +1,30 @@
 import React from 'react';
-import { observer } from 'mobx-react';
 
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemViewModel } from '../viewModels/todoItem.viewModel';
-import { useViewModel } from '../../common/hooks';
+import { useObserve, useViewModel } from '../../common/hooks';
 
 interface Props {
   todoItem: TodoItemFields;
 }
 
-export const TodoItemView: React.FC<Props> = observer(({ todoItem }) => {
+export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
   const vm = useViewModel(TodoItemViewModel, {
     todoItem,
   });
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
+  useObserve(vm.editText);
+  useObserve(vm.isEditing);
+
+  const onKeyDown = async (e: React.KeyboardEvent) => {
     // Enter
     if (e.keyCode === 13) {
-      vm.commitEditText();
+      await vm.commitEditText();
     }
   };
 
   let className = '';
-  if (vm.isEditing) {
+  if (vm.isEditing.value) {
     className += 'editing';
   }
 
@@ -44,10 +46,10 @@ export const TodoItemView: React.FC<Props> = observer(({ todoItem }) => {
       </div>
       <input
         className="edit"
-        value={vm.editText}
-        onChange={e => (vm.editText = e.target.value)}
+        value={vm.editText.value}
+        onChange={e => vm.editText.next(e.target.value)}
         onKeyDown={onKeyDown}
       />
     </li>
   );
-});
+};

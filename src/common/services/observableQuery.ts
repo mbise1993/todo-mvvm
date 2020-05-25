@@ -1,6 +1,5 @@
-import { action, observable } from 'mobx';
-import { actionAsync, task } from 'mobx-utils';
 import { ObservableQuery as ApolloObservableQuery, ApolloQueryResult } from '@apollo/client';
+import { BehaviorSubject } from 'rxjs';
 import { DocumentNode, GraphQLError } from 'graphql';
 
 import { GraphQlClient } from './graphQlClient';
@@ -20,35 +19,31 @@ export class ObservableQuery<TResult, TVariables> {
   private observable?: ApolloObservableQuery<TResult, TVariables>;
   private subscriptions: Subscription[] = [];
 
-  @observable isLoading = false;
-  @observable error: GraphQLError | null = null;
+  isLoading = new BehaviorSubject(false);
+  error = new BehaviorSubject<GraphQLError | null>(null);
 
   constructor(
     private readonly client: GraphQlClient,
     private readonly options: ObservableQueryOptions<TResult>,
   ) {}
 
-  @actionAsync
   async execute(variables?: TVariables) {
     try {
-      this.isLoading = true;
-      const result = await task(
-        this.client.query<TResult, TVariables>({
-          query: this.options.document,
-          variables,
-        }),
-      );
+      this.isLoading.next(true);
+      const result = await this.client.query<TResult, TVariables>({
+        query: this.options.document,
+        variables,
+      });
 
-      this.error = null;
+      this.error.next(null);
       return result;
     } catch (e) {
-      this.error = e;
+      this.error.next(e);
     } finally {
-      this.isLoading = false;
+      this.isLoading.next(false);
     }
   }
 
-  @action
   watch(variables?: TVariables) {
     this.observable = this.client.watchQuery<TResult, TVariables>({
       query: this.options.document,
@@ -78,11 +73,10 @@ export class ObservableQuery<TResult, TVariables> {
     this.subscriptions = [];
   }
 
-  @action
   private onNext(result: ApolloQueryResult<TResult>) {
-    this.isLoading = result.loading;
+    this.isLoading.next(result.loading);
     if (result.errors && result.errors.length > 0) {
-      this.error = result.errors[0];
+      this.error.next(result.errors[0]);
     }
   }
 }

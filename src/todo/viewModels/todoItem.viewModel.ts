@@ -1,7 +1,6 @@
-import { action, computed, observable } from 'mobx';
-import { actionAsync, task } from 'mobx-utils';
 import { injectable } from 'inversify';
 
+import { BehaviorSubject } from 'rxjs';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
 import { ViewModel } from '../../common/viewModels';
@@ -14,71 +13,62 @@ interface Props {
 export class TodoItemViewModel extends ViewModel<Props> {
   private todoItem!: TodoItemFields;
 
-  @observable editText = '';
-  @observable isEditing = false;
+  editText = new BehaviorSubject('');
+  isEditing = new BehaviorSubject(false);
 
   constructor(private readonly todoItemService: TodoItemService) {
     super();
   }
 
-  @computed
   get id() {
     return this.todoItem.id;
   }
 
-  @computed
   get description() {
     return this.todoItem.task;
   }
 
-  @computed
   get isComplete() {
     return this.todoItem.done;
   }
 
-  @action
   startEditing() {
-    this.editText = this.description;
-    this.isEditing = true;
+    this.editText.next(this.description);
+    this.isEditing.next(true);
   }
 
-  @actionAsync
   async commitEditText() {
-    await task(
-      this.todoItemService.updateItem.execute({
-        id: this.todoItem.id,
-        input: {
-          task: this.editText,
-        } as any,
-      }),
-    );
+    await this.todoItemService.updateItem.execute({
+      id: this.todoItem.id,
+      input: {
+        task: this.editText.value,
+      } as any,
+    });
 
-    this.editText = '';
-    this.isEditing = false;
+    this.editText.next('');
+    this.isEditing.next(false);
   }
 
-  @actionAsync
   async toggleComplete() {
-    await task(
-      this.todoItemService.updateItem.execute({
-        id: this.todoItem.id,
-        input: {
-          done: !this.todoItem.done,
-        } as any,
-      }),
-    );
+    await this.todoItemService.updateItem.execute({
+      id: this.todoItem.id,
+      input: {
+        done: !this.todoItem.done,
+      } as any,
+    });
   }
 
-  @actionAsync
   async deleteItem() {
-    await task(
-      this.todoItemService.deleteItem.execute({
-        id: this.todoItem.id,
-      }),
-    );
+    await this.todoItemService.deleteItem.execute({
+      id: this.todoItem.id,
+    });
   }
 
-  protected onDidReceiveProps() {
+  protected onInit() {
+    this.todoItem = this.props.todoItem;
+  }
+
+  protected onPropsChanged() {
     this.todoItem = this.props.todoItem;
   }
 }

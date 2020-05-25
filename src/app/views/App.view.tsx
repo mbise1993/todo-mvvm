@@ -1,13 +1,17 @@
 import React from 'react';
-import { observer } from 'mobx-react';
 
 import { AppViewModel } from '../viewModels/app.viewModel';
 import { TodoListFooter } from '../../todo/views/TodoListFooter.view';
 import { TodoListView } from '../../todo/views/TodoList.view';
-import { useViewModel } from '../../common/hooks';
+import { useBindReadonly, useObserve, useViewModel } from '../../common/hooks';
 
-export const AppView: React.FC = observer(() => {
+export const AppView: React.FC = () => {
   const vm = useViewModel(AppViewModel, null);
+
+  useObserve(vm.newItemText);
+  useObserve(vm.toggleAllChecked);
+  const hasItems = useBindReadonly(vm.hasItems);
+  const itemsLeftCount = useBindReadonly(vm.itemsLeftCount);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Enter
@@ -24,19 +28,19 @@ export const AppView: React.FC = observer(() => {
           autoFocus
           className="new-todo"
           placeholder="What needs to be done?"
-          value={vm.newItemText}
-          onChange={e => (vm.newItemText = e.target.value)}
+          value={vm.newItemText.value}
+          onChange={e => vm.newItemText.next(e.target.value)}
           onKeyDown={onKeyDown}
         />
       </header>
       {/* <!-- This section should be hidden by default and shown when there are todos --> */}
-      {vm.hasItems && (
+      {hasItems && (
         <section className="main">
           <input
             id="toggle-all"
             className="toggle-all"
             type="checkbox"
-            checked={vm.toggleAllChecked}
+            checked={vm.toggleAllChecked.value}
             onChange={() => vm.toggleAll()}
           />
           <label htmlFor="toggle-all">Mark all as complete</label>
@@ -45,9 +49,9 @@ export const AppView: React.FC = observer(() => {
       )}
       {/* <!-- This footer should hidden by default and shown when there are todos --> */}
       <TodoListFooter
-        itemsLeft={vm.itemsLeft}
+        itemsLeft={itemsLeftCount}
         onClearCompletedClick={() => vm.clearCompletedItems()}
       />
     </section>
   );
-});
+};

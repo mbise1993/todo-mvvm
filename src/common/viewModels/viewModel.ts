@@ -1,4 +1,5 @@
 export abstract class ViewModel<TProps = unknown> {
+  private _isInitialized = false;
   private _props!: TProps;
 
   get props() {
@@ -6,11 +7,20 @@ export abstract class ViewModel<TProps = unknown> {
   }
 
   set props(props: TProps) {
+    const previousProps = this._props;
     this._props = props;
-    this.onDidReceiveProps();
+
+    if (!this._isInitialized) {
+      this.onInit();
+      this._isInitialized = true;
+    } else {
+      this.onPropsChanged(previousProps);
+    }
   }
 
-  onDidUnmount() {}
+  onUnmount() {}
 
-  protected onDidReceiveProps() {}
+  protected onInit() {}
+
+  protected onPropsChanged(previousProps: TProps) {}
 }

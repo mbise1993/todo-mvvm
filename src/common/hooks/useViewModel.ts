@@ -30,19 +30,26 @@ export const useViewModel = <T extends ViewModel<any>>(type: Type<T>, props: T['
   const container = useContainer();
   const previousProps = React.useRef<T['props']>();
 
-  if (!previousProps.current || !isShallowEqual(previousProps.current, props)) {
-    previousProps.current = props;
-  }
-
   const viewModel = React.useMemo(() => {
     const vm = container.get<T>(type);
     vm.props = props;
     return vm;
-  }, [previousProps.current]);
+  }, []);
+
+  if (!previousProps.current || !isShallowEqual(previousProps.current, props)) {
+    previousProps.current = props;
+  }
+
+  // const viewModel = React.useMemo(() => {
+  //   const vm = container.get<T>(type);
+  //   vm.props = props;
+  //   return vm;
+  // }, [previousProps.current]);
 
   React.useEffect(() => {
-    return () => viewModel.onDidUnmount();
-  }, []);
+    viewModel.props = props;
+    return () => viewModel.onUnmount();
+  }, [previousProps.current]);
 
   return viewModel;
 };

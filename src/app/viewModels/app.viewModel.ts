@@ -1,6 +1,6 @@
-import { actionAsync, task } from 'mobx-utils';
-import { computed, observable } from 'mobx';
+import { BehaviorSubject } from 'rxjs';
 import { injectable } from 'inversify';
+import { map } from 'rxjs/operators';
 
 import { TodoItemService } from '../../todo/services/todoItem.service';
 import { TodoListService } from '../../todo/services/todoList.service';
@@ -8,8 +8,8 @@ import { ViewModel } from '../../common/viewModels';
 
 @injectable()
 export class AppViewModel extends ViewModel {
-  @observable newItemText = '';
-  @observable toggleAllChecked = false;
+  newItemText = new BehaviorSubject('');
+  toggleAllChecked = new BehaviorSubject(false);
 
   constructor(
     private readonly todoListService: TodoListService,
@@ -18,61 +18,43 @@ export class AppViewModel extends ViewModel {
     super();
   }
 
-  @computed
-  get hasItems() {
-    return this.todoListService.items.length > 0;
-  }
+  hasItems = this.todoListService.items.pipe(map(items => items.length > 0));
 
-  @computed
-  get itemsLeft() {
-    const items = this.todoListService.items.filter(item => !item.done);
-    return items.length;
-  }
+  itemsLeftCount = this.todoListService.items.pipe(
+    map(items => items.filter(item => !item.done).length),
+  );
 
-  @computed
-  get completedItems() {
-    return this.todoListService.items.filter(item => item.done);
-  }
-
-  @actionAsync
   async addItem() {
-    await task(
-      this.todoListService.addItem.execute({
-        input: {
-          user_id: '1',
-          task: this.newItemText,
-          done: false,
-        },
-      }),
-    );
+    await this.todoListService.addItem.execute({
+      input: {
+        user_id: '1',
+        task: this.newItemText.value,
+        done: false,
+      },
+    });
 
-    this.newItemText = '';
+    this.newItemText.next('');
   }
 
-  @actionAsync
   async toggleAll() {
-    for (const item of this.todoListService.items) {
-      await task(
-        this.todoItemService.updateItem.execute({
-          id: item.id,
-          input: {
-            done: !this.toggleAllChecked,
-          } as any,
-        }),
-      );
+    for (const item of this.todoListService.items.value) {
+      await this.todoItemService.updateItem.execute({
+        id: item.id,
+        input: {
+          done: !this.toggleAllChecked,
+        } as any,
+      });
     }
 
-    this.toggleAllChecked = !this.toggleAllChecked;
+    this.toggleAllChecked.next(!this.toggleAllChecked.value);
   }
 
-  @actionAsync
   async clearCompletedItems() {
-    for (const item of this.completedItems) {
-      await task(
-        this.todoItemService.deleteItem.execute({
-          id: item.id,
-        }),
-      );
+    const completedItems = this.todoListService.items.value.filter(item => item.done);
+    for (const item of completedItems) {
+      await this.todoItemService.deleteItem.execute({
+        id: item.id,
+      });
     }
   }
 }
