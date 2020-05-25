@@ -2,14 +2,14 @@ import React from 'react';
 
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemViewModel } from '../viewModels/todoItem.viewModel';
-import { useObserve, useViewModel } from '../../common/hooks';
+import { useObserve, useReactiveViewModel } from '../../common/hooks';
 
 interface Props {
   todoItem: TodoItemFields;
 }
 
 export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
-  const vm = useViewModel(TodoItemViewModel, {
+  const vm = useReactiveViewModel(TodoItemViewModel, {
     todoItem,
   });
 
@@ -28,7 +28,7 @@ export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
     className += 'editing';
   }
 
-  if (vm.isComplete) {
+  if (vm.todoItem.done) {
     className += ' complete';
   }
 
@@ -38,10 +38,10 @@ export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
         <input
           className="toggle"
           type="checkbox"
-          checked={vm.isComplete}
+          checked={todoItem.done}
           onChange={() => vm.toggleComplete()}
         />
-        <label>{vm.description}</label>
+        <label>{todoItem.task}</label>
         <button className="destroy" onClick={() => vm.deleteItem()}></button>
       </div>
       <input

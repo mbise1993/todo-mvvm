@@ -16,8 +16,8 @@ export const useBind = <T>(subject: Subject<T>): [T, (value: T) => void] => {
   return [currentValue!, setValue];
 };
 
-export const useBindReadonly = <T>(observable: Observable<T>): T => {
-  const [currentValue, setCurrentValue] = React.useState<T>();
+export const useBindReadonly = <T>(observable: Observable<T>, defaultValue: T): T => {
+  const [currentValue, setCurrentValue] = React.useState<T>(defaultValue);
 
   React.useEffect(() => {
     const subscription = observable.subscribe(value => setCurrentValue(value));

@@ -1,20 +1,19 @@
 import { injectable } from 'inversify';
 
-import { BehaviorSubject } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { Filter } from '../../common/utils/filiter';
+import { filter, map } from 'rxjs/operators';
+import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
 import { TodoListService } from '../services/todoList.service';
-import { ViewModel } from '../../common/viewModels';
 
 interface Props {
   filter: Filter;
 }
 
 @injectable()
-export class TodoListViewModel extends ViewModel<Props> {
-  items = new BehaviorSubject<TodoItemFields[]>([]);
-
+export class TodoListViewModel extends ReactiveViewModel<Props> {
   constructor(
     private readonly todoListService: TodoListService,
     private readonly todoItemService: TodoItemService,
@@ -22,32 +21,26 @@ export class TodoListViewModel extends ViewModel<Props> {
     super();
   }
 
+  filteredItems = combineLatest([this.todoListService.items, this.$props]).pipe(
+    filter(([, props]) => !!props),
+    map(([items, props]) => this.filterItems(items, props!.filter)),
+  );
+
   async deleteItem(itemId: string) {
     await this.todoItemService.deleteItem.execute({
       id: itemId,
     });
   }
 
-  protected onInit() {
-    this.todoListService.items.subscribe(items => {
-      this.filterItems(items);
+  private filterItems(items: TodoItemFields[], filter: Filter) {
+    return items.filter(item => {
+      if (filter === 'active') {
+        return !item.done;
+      } else if (filter === 'completed') {
+        return item.done;
+      } else {
+        return items;
+      }
     });
-  }
-
-  protected onPropsChanged() {
-    this.filterItems(this.items.value);
-  }
-
-  private filterItems(items: TodoItemFields[]) {
-    switch (this.props.filter) {
-      case 'active':
-        this.items.next(items.filter(item => !item.done));
-        break;
-      case 'completed':
-        this.items.next(items.filter(item => item.done));
-        break;
-      default:
-        this.items.next(items);
-    }
   }
 }

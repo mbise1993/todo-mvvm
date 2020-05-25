@@ -41,7 +41,7 @@ export class AppViewModel extends ViewModel {
       await this.todoItemService.updateItem.execute({
         id: item.id,
         input: {
-          done: !this.toggleAllChecked,
+          done: !this.toggleAllChecked.value,
         } as any,
       });
     }

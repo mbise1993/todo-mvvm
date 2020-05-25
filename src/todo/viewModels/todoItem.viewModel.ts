@@ -1,18 +1,18 @@
 import { injectable } from 'inversify';
 
 import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
-import { ViewModel } from '../../common/viewModels';
 
 interface Props {
   todoItem: TodoItemFields;
 }
 
 @injectable()
-export class TodoItemViewModel extends ViewModel<Props> {
-  private todoItem!: TodoItemFields;
-
+export class TodoItemViewModel extends ReactiveViewModel<Props> {
+  todoItem!: TodoItemFields;
   editText = new BehaviorSubject('');
   isEditing = new BehaviorSubject(false);
 
@@ -20,20 +20,10 @@ export class TodoItemViewModel extends ViewModel<Props> {
     super();
   }
 
-  get id() {
-    return this.todoItem.id;
-  }
-
-  get description() {
-    return this.todoItem.task;
-  }
-
-  get isComplete() {
-    return this.todoItem.done;
-  }
+  $todoItem = this.$props.pipe(map(props => props!.todoItem));
 
   startEditing() {
-    this.editText.next(this.description);
+    this.editText.next(this.todoItem.task);
     this.isEditing.next(true);
   }
 
@@ -64,11 +54,7 @@ export class TodoItemViewModel extends ViewModel<Props> {
     });
   }
 
-  protected onInit() {
-    this.todoItem = this.props.todoItem;
-  }
-
-  protected onPropsChanged() {
-    this.todoItem = this.props.todoItem;
+  onInit() {
+    this.$props.subscribe(props => (this.todoItem = props!.todoItem));
   }
 }
