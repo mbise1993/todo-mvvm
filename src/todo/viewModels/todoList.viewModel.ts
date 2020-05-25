@@ -1,10 +1,11 @@
 import { injectable } from 'inversify';
 
 import { BehaviorSubject } from 'rxjs';
+import { DeleteTodoItemMutation } from '../mutations/deleteTodoItem.mutation';
 import { Filter } from '../../common/utils/filiter';
+import { GetTodoItemsQuery } from '../queries/getTodoItems.query';
+import { MutationExecutor } from '../../common/services/mutationExecutor';
 import { TodoItemFields } from '../api/todoItemFields.generated';
-import { TodoItemService } from '../services/todoItem.service';
-import { TodoListService } from '../services/todoList.service';
 import { ViewModel } from '../../common/viewModels';
 
 interface Props {
@@ -16,20 +17,22 @@ export class TodoListViewModel extends ViewModel<Props> {
   items = new BehaviorSubject<TodoItemFields[]>([]);
 
   constructor(
-    private readonly todoListService: TodoListService,
-    private readonly todoItemService: TodoItemService,
+    private readonly getTodoItems: GetTodoItemsQuery,
+    private readonly mutationExecutor: MutationExecutor,
   ) {
     super();
   }
 
   async deleteItem(itemId: string) {
-    await this.todoItemService.deleteItem.execute({
-      id: itemId,
-    });
+    await this.mutationExecutor.execute(
+      new DeleteTodoItemMutation({
+        id: itemId,
+      }),
+    );
   }
 
   protected onInit() {
-    this.todoListService.items.subscribe(items => {
+    this.getTodoItems.items.subscribe(items => {
       this.filterItems(items);
     });
   }

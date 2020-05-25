@@ -2,8 +2,11 @@ import { BehaviorSubject } from 'rxjs';
 import { injectable } from 'inversify';
 import { map } from 'rxjs/operators';
 
-import { TodoItemService } from '../../todo/services/todoItem.service';
-import { TodoListService } from '../../todo/services/todoList.service';
+import { AddTodoItemMutation } from '../../todo/mutations/addTodoItem.mutation';
+import { DeleteTodoItemMutation } from '../../todo/mutations/deleteTodoItem.mutation';
+import { GetTodoItemsQuery } from '../../todo/queries/getTodoItems.query';
+import { MutationExecutor } from '../../common/services/mutationExecutor';
+import { UpdateTodoItemMutation } from '../../todo/mutations/updateTodoItem.mutation';
 import { ViewModel } from '../../common/viewModels';
 
 @injectable()
@@ -12,49 +15,55 @@ export class AppViewModel extends ViewModel {
   toggleAllChecked = new BehaviorSubject(false);
 
   constructor(
-    private readonly todoListService: TodoListService,
-    private readonly todoItemService: TodoItemService,
+    private readonly getTodoItems: GetTodoItemsQuery,
+    private readonly mutationExecutor: MutationExecutor,
   ) {
     super();
   }
 
-  hasItems = this.todoListService.items.pipe(map(items => items.length > 0));
+  hasItems = this.getTodoItems.items.pipe(map(items => items.length > 0));
 
-  itemsLeftCount = this.todoListService.items.pipe(
+  itemsLeftCount = this.getTodoItems.items.pipe(
     map(items => items.filter(item => !item.done).length),
   );
 
   async addItem() {
-    await this.todoListService.addItem.execute({
-      input: {
-        user_id: '1',
-        task: this.newItemText.value,
-        done: false,
-      },
-    });
+    await this.mutationExecutor.execute(
+      new AddTodoItemMutation({
+        input: {
+          user_id: '1',
+          task: this.newItemText.value,
+          done: false,
+        },
+      }),
+    );
 
     this.newItemText.next('');
   }
 
   async toggleAll() {
-    for (const item of this.todoListService.items.value) {
-      await this.todoItemService.updateItem.execute({
-        id: item.id,
-        input: {
-          done: !this.toggleAllChecked,
-        } as any,
-      });
+    for (const item of this.getTodoItems.items.value) {
+      await this.mutationExecutor.execute(
+        new UpdateTodoItemMutation({
+          id: item.id,
+          input: {
+            done: !this.toggleAllChecked,
+          } as any,
+        }),
+      );
     }
 
     this.toggleAllChecked.next(!this.toggleAllChecked.value);
   }
 
   async clearCompletedItems() {
-    const completedItems = this.todoListService.items.value.filter(item => item.done);
+    const completedItems = this.getTodoItems.items.value.filter(item => item.done);
     for (const item of completedItems) {
-      await this.todoItemService.deleteItem.execute({
-        id: item.id,
-      });
+      await this.mutationExecutor.execute(
+        new DeleteTodoItemMutation({
+          id: item.id,
+        }),
+      );
     }
   }
 }

@@ -1,8 +1,10 @@
 import { injectable } from 'inversify';
 
 import { BehaviorSubject } from 'rxjs';
+import { DeleteTodoItemMutation } from '../mutations/deleteTodoItem.mutation';
+import { MutationExecutor } from '../../common/services/mutationExecutor';
 import { TodoItemFields } from '../api/todoItemFields.generated';
-import { TodoItemService } from '../services/todoItem.service';
+import { UpdateTodoItemMutation } from '../mutations/updateTodoItem.mutation';
 import { ViewModel } from '../../common/viewModels';
 
 interface Props {
@@ -16,7 +18,7 @@ export class TodoItemViewModel extends ViewModel<Props> {
   editText = new BehaviorSubject('');
   isEditing = new BehaviorSubject(false);
 
-  constructor(private readonly todoItemService: TodoItemService) {
+  constructor(private readonly mutationExecutor: MutationExecutor) {
     super();
   }
 
@@ -38,30 +40,36 @@ export class TodoItemViewModel extends ViewModel<Props> {
   }
 
   async commitEditText() {
-    await this.todoItemService.updateItem.execute({
-      id: this.todoItem.id,
-      input: {
-        task: this.editText.value,
-      } as any,
-    });
+    await this.mutationExecutor.execute(
+      new UpdateTodoItemMutation({
+        id: this.todoItem.id,
+        input: {
+          task: this.editText.value,
+        } as any,
+      }),
+    );
 
     this.editText.next('');
     this.isEditing.next(false);
   }
 
   async toggleComplete() {
-    await this.todoItemService.updateItem.execute({
-      id: this.todoItem.id,
-      input: {
-        done: !this.todoItem.done,
-      } as any,
-    });
+    await this.mutationExecutor.execute(
+      new UpdateTodoItemMutation({
+        id: this.todoItem.id,
+        input: {
+          done: !this.todoItem.done,
+        } as any,
+      }),
+    );
   }
 
   async deleteItem() {
-    await this.todoItemService.deleteItem.execute({
-      id: this.todoItem.id,
-    });
+    await this.mutationExecutor.execute(
+      new DeleteTodoItemMutation({
+        id: this.todoItem.id,
+      }),
+    );
   }
 
   protected onInit() {
