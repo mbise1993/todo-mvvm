@@ -26,16 +26,24 @@ const isShallowEqual = (a: any, b: any) => {
   return length === Object.keys(b).length;
 };
 
-export const useReactiveViewModel = <TProps, T extends ReactiveViewModel<TProps>>(
+export function useReactiveViewModel<T extends ReactiveViewModel>(type: Type<T>): T;
+export function useReactiveViewModel<TProps, T extends ReactiveViewModel<TProps>>(
   type: Type<T>,
   props: TProps,
-): T => {
+): T;
+export function useReactiveViewModel<TProps, T extends ReactiveViewModel<TProps>>(
+  type: Type<T>,
+  props?: TProps,
+): T {
   const container = useContainer();
   const previousProps = React.useRef<TProps>();
 
   const viewModel = React.useMemo(() => {
     const vm = container.get<T>(type);
-    vm.$props.next(props);
+    if (props) {
+      vm.$props.next(props);
+    }
+
     vm.onInit();
     return vm;
   }, []);
@@ -45,9 +53,12 @@ export const useReactiveViewModel = <TProps, T extends ReactiveViewModel<TProps>
   }
 
   React.useEffect(() => {
-    viewModel.$props.next(props);
+    if (props) {
+      viewModel.$props.next(props);
+    }
+
     return () => viewModel.dispose();
   }, [previousProps.current]);
 
   return viewModel;
-};
+}

@@ -13,8 +13,8 @@ export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
     todoItem,
   });
 
-  useObserve(vm.editText);
   useObserve(vm.isEditing);
+  useObserve(vm.editText);
 
   const onKeyDown = async (e: React.KeyboardEvent) => {
     // Enter
@@ -41,7 +41,7 @@ export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
           checked={todoItem.done}
           onChange={() => vm.toggleComplete()}
         />
-        <label>{todoItem.task}</label>
+        <label>{vm.todoItem.task}</label>
         <button className="destroy" onClick={() => vm.deleteItem()}></button>
       </div>
       <input

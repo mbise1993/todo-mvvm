@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 
 import { combineLatest } from 'rxjs';
 import { Filter } from '../../common/utils/filiter';
-import { filter, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
@@ -22,8 +22,7 @@ export class TodoListViewModel extends ReactiveViewModel<Props> {
   }
 
   filteredItems = combineLatest([this.todoListService.items, this.$props]).pipe(
-    filter(([, props]) => !!props),
-    map(([items, props]) => this.filterItems(items, props!.filter)),
+    map(([items, props]) => this.filterItems(items, props.filter)),
   );
 
   async deleteItem(itemId: string) {

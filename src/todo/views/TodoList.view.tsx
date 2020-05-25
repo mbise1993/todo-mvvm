@@ -4,7 +4,7 @@ import { useLocation } from 'react-router';
 import { getFilterFromPath } from '../../common/utils/filiter';
 import { TodoItemView } from './TodoItem.view';
 import { TodoListViewModel } from '../viewModels/todoList.viewModel';
-import { useBindReadonly, useReactiveViewModel } from '../../common/hooks';
+import { useObservable, useReactiveViewModel } from '../../common/hooks';
 
 export const TodoListView: React.FC = () => {
   const location = useLocation();
@@ -12,7 +12,7 @@ export const TodoListView: React.FC = () => {
     filter: getFilterFromPath(location.pathname),
   });
 
-  const items = useBindReadonly(vm.filteredItems, []);
+  const items = useObservable(vm.filteredItems, []);
 
   return (
     <ul className="todo-list">

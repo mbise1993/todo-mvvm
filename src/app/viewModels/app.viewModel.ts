@@ -2,12 +2,12 @@ import { BehaviorSubject } from 'rxjs';
 import { injectable } from 'inversify';
 import { map } from 'rxjs/operators';
 
+import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemService } from '../../todo/services/todoItem.service';
 import { TodoListService } from '../../todo/services/todoList.service';
-import { ViewModel } from '../../common/viewModels';
 
 @injectable()
-export class AppViewModel extends ViewModel {
+export class AppViewModel extends ReactiveViewModel {
   newItemText = new BehaviorSubject('');
   toggleAllChecked = new BehaviorSubject(false);
 

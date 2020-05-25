@@ -1,7 +1,6 @@
 import { injectable } from 'inversify';
 
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
@@ -12,7 +11,6 @@ interface Props {
 
 @injectable()
 export class TodoItemViewModel extends ReactiveViewModel<Props> {
-  todoItem!: TodoItemFields;
   editText = new BehaviorSubject('');
   isEditing = new BehaviorSubject(false);
 
@@ -20,7 +18,9 @@ export class TodoItemViewModel extends ReactiveViewModel<Props> {
     super();
   }
 
-  $todoItem = this.$props.pipe(map(props => props!.todoItem));
+  get todoItem() {
+    return this.$props.value.todoItem;
+  }
 
   startEditing() {
     this.editText.next(this.todoItem.task);
@@ -52,9 +52,5 @@ export class TodoItemViewModel extends ReactiveViewModel<Props> {
     await this.todoItemService.deleteItem.execute({
       id: this.todoItem.id,
     });
-  }
-
-  onInit() {
-    this.$props.subscribe(props => (this.todoItem = props!.todoItem));
   }
 }
