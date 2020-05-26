@@ -4,15 +4,15 @@ import { useLocation } from 'react-router';
 import { getFilterFromPath } from '../../common/utils/filiter';
 import { TodoItemView } from './TodoItem.view';
 import { TodoListViewModel } from '../viewModels/todoList.viewModel';
-import { useObservable, useReactiveViewModel } from '../../common/hooks';
+import { useObservable, useViewModel } from '../../common/hooks';
 
 export const TodoListView: React.FC = () => {
   const location = useLocation();
-  const vm = useReactiveViewModel(TodoListViewModel, {
+  const vm = useViewModel(TodoListViewModel, {
     filter: getFilterFromPath(location.pathname),
   });
 
-  const items = useObservable(vm.filteredItems, []);
+  const items = useObservable(vm.$filteredItems, []);
 
   return (
     <ul className="todo-list">

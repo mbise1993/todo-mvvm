@@ -2,19 +2,19 @@ import React from 'react';
 
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemViewModel } from '../viewModels/todoItem.viewModel';
-import { useObserve, useReactiveViewModel } from '../../common/hooks';
+import { useObservable, useViewModel } from '../../common/hooks';
 
 interface Props {
   todoItem: TodoItemFields;
 }
 
 export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
-  const vm = useReactiveViewModel(TodoItemViewModel, {
+  const vm = useViewModel(TodoItemViewModel, {
     todoItem,
   });
 
-  useObserve(vm.isEditing);
-  useObserve(vm.editText);
+  const editText = useObservable(vm.$editText, '');
+  const isEditing = useObservable(vm.$isEditing, false);
 
   const onKeyDown = async (e: React.KeyboardEvent) => {
     // Enter
@@ -24,7 +24,7 @@ export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
   };
 
   let className = '';
-  if (vm.isEditing.value) {
+  if (isEditing) {
     className += 'editing';
   }
 
@@ -46,8 +46,8 @@ export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
       </div>
       <input
         className="edit"
-        value={vm.editText.value}
-        onChange={e => vm.editText.next(e.target.value)}
+        value={editText}
+        onChange={e => vm.setEditText(e.target.value)}
         onKeyDown={onKeyDown}
       />
     </li>

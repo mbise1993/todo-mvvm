@@ -3,15 +3,14 @@ import React from 'react';
 import { AppViewModel } from '../viewModels/app.viewModel';
 import { TodoListFooter } from '../../todo/views/TodoListFooter.view';
 import { TodoListView } from '../../todo/views/TodoList.view';
-import { useObservable, useReactiveViewModel } from '../../common/hooks';
+import { useObservable, useViewModel } from '../../common/hooks';
 
 export const AppView: React.FC = () => {
-  const vm = useReactiveViewModel(AppViewModel);
+  const vm = useViewModel(AppViewModel);
 
-  const newItemText = useObservable(vm.newItemText, '');
-  const isToggleAllChecked = useObservable(vm.toggleAllChecked, false);
-  const hasItems = useObservable(vm.hasItems, false);
-  const itemsLeftCount = useObservable(vm.itemsLeftCount, 0);
+  const newItemText = useObservable(vm.$newItemText, '');
+  const hasItems = useObservable(vm.$hasItems, false);
+  const itemsLeftCount = useObservable(vm.$itemsLeftCount, 0);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Enter
@@ -23,13 +22,13 @@ export const AppView: React.FC = () => {
   return (
     <section className="todoapp">
       <header className="header">
-        <h1>todos</h1>
+        <h1>todo_mvvm</h1>
         <input
           autoFocus
           className="new-todo"
           placeholder="What needs to be done?"
           value={newItemText}
-          onChange={e => vm.newItemText.next(e.target.value)}
+          onChange={e => vm.setNewItemText(e.target.value)}
           onKeyDown={onKeyDown}
         />
       </header>
@@ -40,7 +39,7 @@ export const AppView: React.FC = () => {
             id="toggle-all"
             className="toggle-all"
             type="checkbox"
-            checked={isToggleAllChecked}
+            checked={itemsLeftCount === 0}
             onChange={() => vm.toggleAll()}
           />
           <label htmlFor="toggle-all">Mark all as complete</label>

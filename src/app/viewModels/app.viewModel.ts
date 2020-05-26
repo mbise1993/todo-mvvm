@@ -2,14 +2,14 @@ import { BehaviorSubject } from 'rxjs';
 import { injectable } from 'inversify';
 import { map } from 'rxjs/operators';
 
-import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemService } from '../../todo/services/todoItem.service';
 import { TodoListService } from '../../todo/services/todoList.service';
+import { ViewModel } from '../../common/viewModels';
 
 @injectable()
-export class AppViewModel extends ReactiveViewModel {
-  newItemText = new BehaviorSubject('');
-  toggleAllChecked = new BehaviorSubject(false);
+export class AppViewModel extends ViewModel {
+  private newItemText = new BehaviorSubject('');
+  private toggleAllChecked = new BehaviorSubject(false);
 
   constructor(
     private readonly todoListService: TodoListService,
@@ -18,9 +18,15 @@ export class AppViewModel extends ReactiveViewModel {
     super();
   }
 
-  hasItems = this.todoListService.items.pipe(map(items => items.length > 0));
+  $newItemText = this.newItemText.asObservable();
 
-  itemsLeftCount = this.todoListService.items.pipe(
+  setNewItemText(value: string) {
+    this.newItemText.next(value);
+  }
+
+  $hasItems = this.todoListService.items.pipe(map(items => items.length > 0));
+
+  $itemsLeftCount = this.todoListService.items.pipe(
     map(items => items.filter(item => !item.done).length),
   );
 

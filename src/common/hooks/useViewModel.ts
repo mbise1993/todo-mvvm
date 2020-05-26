@@ -26,13 +26,21 @@ const isShallowEqual = (a: any, b: any) => {
   return length === Object.keys(b).length;
 };
 
-export const useViewModel = <T extends ViewModel<any>>(type: Type<T>, props: T['props']): T => {
+export function useViewModel<T extends ViewModel>(type: Type<T>): T;
+export function useViewModel<TProps, T extends ViewModel<TProps>>(type: Type<T>, props: TProps): T;
+export function useViewModel<TProps, T extends ViewModel<TProps>>(
+  type: Type<T>,
+  props?: TProps,
+): T {
   const container = useContainer();
-  const previousProps = React.useRef<T['props']>();
+  const previousProps = React.useRef<TProps>();
 
   const viewModel = React.useMemo(() => {
     const vm = container.get<T>(type);
-    vm.props = props;
+    if (props) {
+      vm.$props.next(props);
+    }
+
     return vm;
   }, []);
 
@@ -40,16 +48,13 @@ export const useViewModel = <T extends ViewModel<any>>(type: Type<T>, props: T['
     previousProps.current = props;
   }
 
-  // const viewModel = React.useMemo(() => {
-  //   const vm = container.get<T>(type);
-  //   vm.props = props;
-  //   return vm;
-  // }, [previousProps.current]);
-
   React.useEffect(() => {
-    viewModel.props = props;
-    return () => viewModel.onUnmount();
+    if (props) {
+      viewModel.$props.next(props);
+    }
+
+    return () => viewModel.dispose();
   }, [previousProps.current]);
 
   return viewModel;
-};
+}

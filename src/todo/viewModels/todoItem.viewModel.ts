@@ -1,22 +1,30 @@
 import { injectable } from 'inversify';
 
 import { BehaviorSubject } from 'rxjs';
-import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
+import { ViewModel } from '../../common/viewModels';
 
 interface Props {
   todoItem: TodoItemFields;
 }
 
 @injectable()
-export class TodoItemViewModel extends ReactiveViewModel<Props> {
-  editText = new BehaviorSubject('');
-  isEditing = new BehaviorSubject(false);
+export class TodoItemViewModel extends ViewModel<Props> {
+  private readonly editText = new BehaviorSubject('');
+  private readonly isEditing = new BehaviorSubject(false);
 
   constructor(private readonly todoItemService: TodoItemService) {
     super();
   }
+
+  $editText = this.editText.asObservable();
+
+  setEditText(value: string) {
+    this.editText.next(value);
+  }
+
+  $isEditing = this.isEditing.asObservable();
 
   get todoItem() {
     return this.$props.value.todoItem;

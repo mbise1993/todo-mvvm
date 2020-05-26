@@ -3,17 +3,17 @@ import { injectable } from 'inversify';
 import { combineLatest } from 'rxjs';
 import { Filter } from '../../common/utils/filiter';
 import { map } from 'rxjs/operators';
-import { ReactiveViewModel } from '../../common/viewModels';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemService } from '../services/todoItem.service';
 import { TodoListService } from '../services/todoList.service';
+import { ViewModel } from '../../common/viewModels';
 
 interface Props {
   filter: Filter;
 }
 
 @injectable()
-export class TodoListViewModel extends ReactiveViewModel<Props> {
+export class TodoListViewModel extends ViewModel<Props> {
   constructor(
     private readonly todoListService: TodoListService,
     private readonly todoItemService: TodoItemService,
@@ -21,7 +21,7 @@ export class TodoListViewModel extends ReactiveViewModel<Props> {
     super();
   }
 
-  filteredItems = combineLatest([this.todoListService.items, this.$props]).pipe(
+  $filteredItems = combineLatest([this.todoListService.items, this.$props]).pipe(
     map(([items, props]) => this.filterItems(items, props.filter)),
   );
 
