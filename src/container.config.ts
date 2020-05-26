@@ -1,6 +1,8 @@
 import { Container } from 'inversify';
 
-import { loggedOutModule } from './loggedOut.module';
+import { authModule } from './auth/auth.module';
+import { commonModule } from './common/common.module';
+import { LoggedInScope } from './loggedInScope';
 
 export const configureContainer = () => {
   const container = new Container({
@@ -9,7 +11,12 @@ export const configureContainer = () => {
 
   container.bind(Container).toConstantValue(container);
 
-  container.load(loggedOutModule);
+  container
+    .bind(LoggedInScope)
+    .toSelf()
+    .inSingletonScope();
+
+  container.load(authModule, commonModule);
 
   return container;
 };

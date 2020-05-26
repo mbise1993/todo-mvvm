@@ -20,6 +20,10 @@ export class AuthService extends GraphQLService {
 
   $activeUser = this.activeUser.asObservable();
 
+  get isUserLoggedIn(): boolean {
+    return !!this.activeUser.value;
+  }
+
   async signIn(userId: string): Promise<boolean> {
     const result = await this.getUser.fetch({
       id: userId,
