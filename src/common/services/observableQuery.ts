@@ -2,7 +2,7 @@ import { ObservableQuery as ApolloObservableQuery, ApolloQueryResult } from '@ap
 import { BehaviorSubject } from 'rxjs';
 import { DocumentNode, GraphQLError } from 'graphql';
 
-import { GraphQlClient } from './graphQlClient';
+import { GraphQLClient } from './graphQLClient';
 
 interface Subscription {
   closed: boolean;
@@ -23,11 +23,11 @@ export class ObservableQuery<TResult, TVariables> {
   error = new BehaviorSubject<GraphQLError | null>(null);
 
   constructor(
-    private readonly client: GraphQlClient,
+    private readonly client: GraphQLClient,
     private readonly options: ObservableQueryOptions<TResult>,
   ) {}
 
-  async execute(variables?: TVariables) {
+  async fetch(variables?: TVariables) {
     try {
       this.isLoading.next(true);
       const result = await this.client.query<TResult, TVariables>({

@@ -12,15 +12,15 @@ import {
   GetTodoItemsDocument,
   GetTodoItemsVariables,
 } from '../api/GetTodoItems.generated';
-import { GraphQlClient } from '../../common/services/graphQlClient';
-import { GraphQlService } from '../../common/services/graphQlService';
+import { GraphQLClient } from '../../common/services/graphQLClient';
+import { GraphQLService } from '../../common/services/graphQL.service';
 import { TodoItemFields } from '../api/todoItemFields.generated';
 
 @injectable()
-export class TodoListService extends GraphQlService {
+export class TodoListService extends GraphQLService {
   readonly items = new BehaviorSubject<TodoItemFields[]>([]);
 
-  constructor(client: GraphQlClient) {
+  constructor(client: GraphQLClient) {
     super(client);
 
     this.getItems.watch();

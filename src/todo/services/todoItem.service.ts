@@ -11,8 +11,8 @@ import {
   GetTodoItemsDocument,
   GetTodoItemsVariables,
 } from '../api/GetTodoItems.generated';
-import { GraphQlClient } from '../../common/services/graphQlClient';
-import { GraphQlService } from '../../common/services/graphQlService';
+import { GraphQLClient } from '../../common/services/graphQLClient';
+import { GraphQLService } from '../../common/services/graphQL.service';
 import {
   UpdateTodoItem,
   UpdateTodoItemDocument,
@@ -20,8 +20,8 @@ import {
 } from '../api/UpdateTodoItem.generated';
 
 @injectable()
-export class TodoItemService extends GraphQlService {
-  constructor(client: GraphQlClient) {
+export class TodoItemService extends GraphQLService {
+  constructor(client: GraphQLClient) {
     super(client);
   }
 

@@ -2,7 +2,7 @@ import { ApolloCache, FetchResult } from '@apollo/client';
 import { BehaviorSubject } from 'rxjs';
 import { DocumentNode, GraphQLError } from 'graphql';
 
-import { GraphQlClient } from './graphQlClient';
+import { GraphQLClient } from './graphQLClient';
 
 export interface ObservableMutationOptions<TResult, TVariables> {
   document: DocumentNode;
@@ -18,7 +18,7 @@ export class ObservableMutation<TResult, TVariables> {
   error = new BehaviorSubject<GraphQLError | null>(null);
 
   constructor(
-    private readonly client: GraphQlClient,
+    private readonly client: GraphQLClient,
     private readonly options: ObservableMutationOptions<TResult, TVariables>,
   ) {}
 
