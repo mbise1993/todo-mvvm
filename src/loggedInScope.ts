@@ -9,8 +9,8 @@ import { todoModule } from './todo/todo.module';
 export class LoggedInScope implements IScope {
   onAttach(container: Container) {
     const authService = container.get(AuthService);
-    if (!authService.isUserLoggedIn) {
-      throw new Error('User must be logged in to create logged in scope');
+    if (!authService.loggedInUser) {
+      throw new Error('Please log in to continue');
     }
 
     container.load(appModule, todoModule);

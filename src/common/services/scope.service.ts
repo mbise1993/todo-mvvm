@@ -9,14 +9,23 @@ export interface IScope {
 
 @injectable()
 export class ScopeService {
+  private readonly attachedScopes = new Map<Type<IScope>, IScope>();
+
   constructor(private readonly container: Container) {}
 
   attach(scopeType: Type<IScope>) {
     const scope = this.container.get<IScope>(scopeType);
     scope.onAttach(this.container);
+    this.attachedScopes.set(scopeType, scope);
   }
 
-  detach(scope: IScope) {
+  detach(scopeType: Type<IScope>) {
+    const scope = this.attachedScopes.get(scopeType);
+    if (!scope) {
+      throw new Error(`Scope "${scopeType.name}" is not attached`);
+    }
+
     scope.onDetach(this.container);
+    this.attachedScopes.delete(scopeType);
   }
 }

@@ -2,18 +2,13 @@ import { injectable } from 'inversify';
 
 import { AuthService } from '../services/auth.service';
 import { BehaviorSubject } from 'rxjs';
-import { LoggedInScope } from '../../loggedInScope';
-import { ScopeService } from '../../common/services/scope.service';
 import { ViewModel } from '../../common/viewModels';
 
 @injectable()
 export class SignInViewModel extends ViewModel {
   private readonly userId = new BehaviorSubject<string>('');
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly moduleService: ScopeService,
-  ) {
+  constructor(private readonly authService: AuthService) {
     super();
   }
 
@@ -26,7 +21,6 @@ export class SignInViewModel extends ViewModel {
   async signIn() {
     const success = await this.authService.signIn(this.userId.value);
     if (success) {
-      this.moduleService.attach(LoggedInScope);
       this.userId.next('');
     }
 

@@ -4,6 +4,8 @@ import { injectable } from 'inversify';
 import { GetUser, GetUserDocument, GetUserVariables } from '../api/GetUser.generated';
 import { GraphQLClient } from '../../common/services/graphQLClient';
 import { GraphQLService } from '../../common/services/graphQL.service';
+import { LoggedInScope } from '../../loggedInScope';
+import { ScopeService } from '../../common/services/scope.service';
 import { UserFields } from '../api/userFields.generated';
 
 @injectable()
@@ -14,14 +16,14 @@ export class AuthService extends GraphQLService {
     document: GetUserDocument,
   });
 
-  constructor(client: GraphQLClient) {
+  constructor(client: GraphQLClient, private readonly scopeService: ScopeService) {
     super(client);
   }
 
   $activeUser = this.activeUser.asObservable();
 
-  get isUserLoggedIn(): boolean {
-    return !!this.activeUser.value;
+  get loggedInUser() {
+    return this.activeUser.value;
   }
 
   async signIn(userId: string): Promise<boolean> {
@@ -32,9 +34,14 @@ export class AuthService extends GraphQLService {
     const user = result?.data?.user;
     if (user) {
       this.activeUser.next(user);
+      this.scopeService.attach(LoggedInScope);
       return true;
     }
 
     return false;
+  }
+
+  signOut() {
+    this.scopeService.detach(LoggedInScope);
   }
 }
