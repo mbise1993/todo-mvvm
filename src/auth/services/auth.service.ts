@@ -4,7 +4,7 @@ import { injectable } from 'inversify';
 import { GetUser, GetUserDocument, GetUserVariables } from '../api/GetUser.generated';
 import { GraphQLClient } from '../../common/services/graphQLClient';
 import { GraphQLService } from '../../common/services/graphQL.service';
-import { LoggedInScope } from '../../loggedInScope';
+import { LoggedInScope } from '../../loggedIn.scope';
 import { ScopeService } from '../../common/services/scope.service';
 import { UserFields } from '../api/userFields.generated';
 

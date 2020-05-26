@@ -2,7 +2,7 @@ import { Container } from 'inversify';
 
 import { authModule } from './auth/auth.module';
 import { commonModule } from './common/common.module';
-import { LoggedInScope } from './loggedInScope';
+import { LoggedInScope } from './loggedIn.scope';
 
 export const configureContainer = () => {
   const container = new Container({
