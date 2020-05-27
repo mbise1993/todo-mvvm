@@ -4,7 +4,7 @@ import { injectable } from 'inversify';
 import { GetUser, GetUserDocument, GetUserVariables } from '../api/GetUser.generated';
 import { GraphQLClient } from '../../common/services/graphQLClient';
 import { GraphQLService } from '../../common/services/graphQL.service';
-import { LoggedInScope } from '../../loggedIn.scope';
+import { scopes } from '../../scopes';
 import { ScopeService } from '../../common/services/scope.service';
 import { UserFields } from '../api/userFields.generated';
 
@@ -34,7 +34,7 @@ export class AuthService extends GraphQLService {
     const user = result?.data?.user;
     if (user) {
       this.activeUser.next(user);
-      this.scopeService.attach(LoggedInScope);
+      this.scopeService.attach(scopes.LOGGED_IN);
       return true;
     }
 
@@ -42,6 +42,6 @@ export class AuthService extends GraphQLService {
   }
 
   signOut() {
-    this.scopeService.detach(LoggedInScope);
+    // this.scopeService.detach(LoggedInScope);
   }
 }

@@ -2,6 +2,7 @@ import { ApolloCache, ApolloQueryResult, FetchResult } from '@apollo/client';
 import { BehaviorSubject } from 'rxjs';
 import { injectable } from 'inversify';
 
+import { AppService } from '../../app/services/app.service';
 import {
   CreateTodoItem,
   CreateTodoItemDocument,
@@ -20,10 +21,12 @@ import { TodoItemFields } from '../api/todoItemFields.generated';
 export class TodoListService extends GraphQLService {
   readonly items = new BehaviorSubject<TodoItemFields[]>([]);
 
-  constructor(client: GraphQLClient) {
+  constructor(appService: AppService, client: GraphQLClient) {
     super(client);
 
-    this.getItems.watch();
+    this.getItems.watch({
+      userId: parseInt(appService.activeUser.id),
+    });
   }
 
   get id() {

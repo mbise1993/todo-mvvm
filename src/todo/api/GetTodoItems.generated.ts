@@ -5,7 +5,9 @@ import { TodoItemFields } from './todoItemFields.generated';
 import gql from 'graphql-tag';
 import * as ApolloReactCommon from '@apollo/react-common';
 
-export type GetTodoItemsVariables = {};
+export type GetTodoItemsVariables = {
+  userId: Types.Scalars['Float'];
+};
 
 export type GetTodoItems = {
   __typename?: 'Query';
@@ -13,8 +15,8 @@ export type GetTodoItems = {
 };
 
 export const GetTodoItemsDocument = gql`
-  query GetTodoItems {
-    todos {
+  query GetTodoItems($userId: Float!) {
+    todos(where: { user_id_eq: $userId }) {
       ...TodoItemFields
     }
   }

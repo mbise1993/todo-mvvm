@@ -1,7 +1,5 @@
 import { Container, injectable } from 'inversify';
 
-import { Type } from '../utils';
-
 export interface IScope {
   onAttach(container: Container): void;
   onDetach(container: Container): void;
@@ -9,23 +7,23 @@ export interface IScope {
 
 @injectable()
 export class ScopeService {
-  private readonly attachedScopes = new Map<Type<IScope>, IScope>();
+  private readonly attachedScopes = new Map<string, IScope>();
 
   constructor(private readonly container: Container) {}
 
-  attach(scopeType: Type<IScope>) {
-    const scope = this.container.get<IScope>(scopeType);
+  attach(scopeId: string) {
+    const scope = this.container.get<IScope>(scopeId);
     scope.onAttach(this.container);
-    this.attachedScopes.set(scopeType, scope);
+    this.attachedScopes.set(scopeId, scope);
   }
 
-  detach(scopeType: Type<IScope>) {
-    const scope = this.attachedScopes.get(scopeType);
+  detach(scopeId: string) {
+    const scope = this.attachedScopes.get(scopeId);
     if (!scope) {
-      throw new Error(`Scope "${scopeType.name}" is not attached`);
+      throw new Error(`Scope with ID "${scopeId}" is not attached`);
     }
 
     scope.onDetach(this.container);
-    this.attachedScopes.delete(scopeType);
+    this.attachedScopes.delete(scopeId);
   }
 }
