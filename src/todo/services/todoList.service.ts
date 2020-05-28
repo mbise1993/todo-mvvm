@@ -21,7 +21,7 @@ import { TodoItemFields } from '../api/todoItemFields.generated';
 export class TodoListService extends GraphQLService {
   readonly items = new BehaviorSubject<TodoItemFields[]>([]);
 
-  constructor(appService: AppService, client: GraphQLClient) {
+  constructor(client: GraphQLClient, appService: AppService) {
     super(client);
 
     this.getItems.watch({

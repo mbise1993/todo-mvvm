@@ -1,6 +1,6 @@
 import { GraphQLClient } from './graphQLClient';
-import { ObservableMutation, ObservableMutationOptions } from './observableMutation';
-import { ObservableQuery, ObservableQueryOptions } from './observableQuery';
+import { ObservableMutation, ObservableMutationOptions } from '../utils/observableMutation';
+import { ObservableQuery, ObservableQueryOptions } from '../utils/observableQuery';
 
 export abstract class GraphQLService {
   private readonly queries: ObservableQuery<any, any>[] = [];

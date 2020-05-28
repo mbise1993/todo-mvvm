@@ -2,7 +2,7 @@ import { ApolloCache, FetchResult } from '@apollo/client';
 import { BehaviorSubject } from 'rxjs';
 import { DocumentNode, GraphQLError } from 'graphql';
 
-import { GraphQLClient } from './graphQLClient';
+import { GraphQLClient } from '../services/graphQLClient';
 
 export interface ObservableMutationOptions<TResult, TVariables> {
   document: DocumentNode;
@@ -14,8 +14,8 @@ export interface ObservableMutationOptions<TResult, TVariables> {
 }
 
 export class ObservableMutation<TResult, TVariables> {
-  isLoading = new BehaviorSubject(false);
-  error = new BehaviorSubject<GraphQLError | null>(null);
+  $isLoading = new BehaviorSubject(false);
+  $error = new BehaviorSubject<GraphQLError | null>(null);
 
   constructor(
     private readonly client: GraphQLClient,
@@ -24,7 +24,7 @@ export class ObservableMutation<TResult, TVariables> {
 
   async execute(variables?: TVariables): Promise<TResult | null> {
     try {
-      this.isLoading.next(true);
+      this.$isLoading.next(true);
       const result = await this.client.mutate<TResult, TVariables>({
         mutation: this.options.document,
         variables: variables,
@@ -35,13 +35,13 @@ export class ObservableMutation<TResult, TVariables> {
         },
       });
 
-      this.error.next(null);
+      this.$error.next(null);
       return result.data || null;
     } catch (e) {
-      this.error.next(e);
+      this.$error.next(e);
       return null;
     } finally {
-      this.isLoading.next(true);
+      this.$isLoading.next(true);
     }
   }
 }

@@ -10,6 +10,14 @@ export const SignInPage: React.FC = () => {
 
   const userId = useObservable(vm.$userId, '');
 
+  React.useEffect(() => {
+    vm.tryRestoreSession().then(success => {
+      if (success) {
+        history.push('/all');
+      }
+    });
+  }, []);
+
   const onKeyDown = async (e: React.KeyboardEvent) => {
     // Enter
     if (e.keyCode === 13) {

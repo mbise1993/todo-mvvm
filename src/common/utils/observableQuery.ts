@@ -2,7 +2,7 @@ import { ObservableQuery as ApolloObservableQuery, ApolloQueryResult } from '@ap
 import { BehaviorSubject } from 'rxjs';
 import { DocumentNode, GraphQLError } from 'graphql';
 
-import { GraphQLClient } from './graphQLClient';
+import { GraphQLClient } from '../services/graphQLClient';
 
 interface Subscription {
   closed: boolean;
@@ -19,8 +19,8 @@ export class ObservableQuery<TResult, TVariables> {
   private observable?: ApolloObservableQuery<TResult, TVariables>;
   private subscriptions: Subscription[] = [];
 
-  isLoading = new BehaviorSubject(false);
-  error = new BehaviorSubject<GraphQLError | null>(null);
+  $isLoading = new BehaviorSubject(false);
+  $error = new BehaviorSubject<GraphQLError | null>(null);
 
   constructor(
     private readonly client: GraphQLClient,
@@ -29,18 +29,18 @@ export class ObservableQuery<TResult, TVariables> {
 
   async fetch(variables?: TVariables) {
     try {
-      this.isLoading.next(true);
+      this.$isLoading.next(true);
       const result = await this.client.query<TResult, TVariables>({
         query: this.options.document,
         variables,
       });
 
-      this.error.next(null);
+      this.$error.next(null);
       return result;
     } catch (e) {
-      this.error.next(e);
+      this.$error.next(e);
     } finally {
-      this.isLoading.next(false);
+      this.$isLoading.next(false);
     }
   }
 
@@ -74,9 +74,9 @@ export class ObservableQuery<TResult, TVariables> {
   }
 
   private onNext(result: ApolloQueryResult<TResult>) {
-    this.isLoading.next(result.loading);
+    this.$isLoading.next(result.loading);
     if (result.errors && result.errors.length > 0) {
-      this.error.next(result.errors[0]);
+      this.$error.next(result.errors[0]);
     }
   }
 }

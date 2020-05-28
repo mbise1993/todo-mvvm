@@ -26,4 +26,8 @@ export class SignInViewModel extends ViewModel {
 
     return success;
   }
+
+  async tryRestoreSession() {
+    return this.authService.tryRestoreSession();
+  }
 }
