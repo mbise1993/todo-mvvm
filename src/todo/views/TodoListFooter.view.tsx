@@ -21,7 +21,7 @@ export const TodoListFooter: React.FC<Props> = ({ itemsLeft, onClearCompletedCli
       {/* <!-- Remove this if you don't implement routing --> */}
       <ul className="filters">
         <li>
-          <a className={filter === 'all' ? 'selected' : ''} href="#/">
+          <a className={filter === 'all' ? 'selected' : ''} href="#/all">
             All
           </a>
         </li>

@@ -1,32 +1,34 @@
 import React from 'react';
-import { observer } from 'mobx-react';
 
-import { TodoItem } from '../models/todoItem.model';
+import { TodoItemFields } from '../api/todoItemFields.generated';
 import { TodoItemViewModel } from '../viewModels/todoItem.viewModel';
-import { useViewModel } from '../../common/hooks';
+import { useObservable, useViewModel } from '../../common/hooks';
 
 interface Props {
-  todoItem: TodoItem;
+  todoItem: TodoItemFields;
 }
 
-export const TodoItemView: React.FC<Props> = observer(({ todoItem }) => {
+export const TodoItemView: React.FC<Props> = ({ todoItem }) => {
   const vm = useViewModel(TodoItemViewModel, {
     todoItem,
   });
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
+  const editText = useObservable(vm.$editText, '');
+  const isEditing = useObservable(vm.$isEditing, false);
+
+  const onKeyDown = async (e: React.KeyboardEvent) => {
     // Enter
     if (e.keyCode === 13) {
-      vm.commitEditText();
+      await vm.commitEditText();
     }
   };
 
   let className = '';
-  if (vm.isEditing) {
+  if (isEditing) {
     className += 'editing';
   }
 
-  if (vm.isComplete) {
+  if (vm.todoItem.done) {
     className += ' complete';
   }
 
@@ -36,18 +38,18 @@ export const TodoItemView: React.FC<Props> = observer(({ todoItem }) => {
         <input
           className="toggle"
           type="checkbox"
-          checked={vm.isComplete}
+          checked={todoItem.done}
           onChange={() => vm.toggleComplete()}
         />
-        <label>{vm.description}</label>
+        <label>{vm.todoItem.task}</label>
         <button className="destroy" onClick={() => vm.deleteItem()}></button>
       </div>
       <input
         className="edit"
-        value={vm.editText}
-        onChange={e => (vm.editText = e.target.value)}
+        value={editText}
+        onChange={e => vm.setEditText(e.target.value)}
         onKeyDown={onKeyDown}
       />
     </li>
   );
-});
+};

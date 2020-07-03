@@ -1,14 +1,23 @@
 import { Container } from 'inversify';
 
-import { appModule } from './app/app.module';
-import { todoModule } from './todo/todo.module';
+import { authModule } from './auth/auth.module';
+import { commonModule } from './common/common.module';
+import { LoggedInScope } from './loggedIn.scope';
+import { scopes } from './scopes';
 
 export const configureContainer = () => {
   const container = new Container({
     skipBaseClassChecks: true,
   });
 
-  container.load(appModule, todoModule);
+  container.bind(Container).toConstantValue(container);
+
+  container
+    .bind(scopes.LOGGED_IN)
+    .to(LoggedInScope)
+    .inSingletonScope();
+
+  container.load(authModule, commonModule);
 
   return container;
 };

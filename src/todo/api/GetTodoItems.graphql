@@ -1,0 +1,7 @@
+# import "./todoItemFields.graphql"
+
+query GetTodoItems($userId: Float!) {
+  todos(where: { user_id_eq: $userId }) {
+    ...TodoItemFields
+  }
+}

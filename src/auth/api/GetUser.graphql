@@ -1,0 +1,7 @@
+# import "./userFields.graphql"
+
+query GetUser($id: ID!) {
+  user(id: $id) {
+    ...UserFields
+  }
+}

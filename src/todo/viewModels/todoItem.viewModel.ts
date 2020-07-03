@@ -1,64 +1,64 @@
-import { action, computed, observable } from 'mobx';
 import { injectable } from 'inversify';
 
-import { TodoItem } from '../models/todoItem.model';
-import { TodoList } from '../models/todoList.model';
+import { BehaviorSubject } from 'rxjs';
+import { TodoItemFields } from '../api/todoItemFields.generated';
+import { TodoItemService } from '../services/todoItem.service';
 import { ViewModel } from '../../common/viewModels';
 
-interface IProps {
-  todoItem: TodoItem;
+interface Props {
+  todoItem: TodoItemFields;
 }
 
 @injectable()
-export class TodoItemViewModel extends ViewModel<IProps> {
-  private todoItem!: TodoItem;
+export class TodoItemViewModel extends ViewModel<Props> {
+  private readonly editText = new BehaviorSubject('');
+  private readonly isEditing = new BehaviorSubject(false);
 
-  @observable editText = '';
-  @observable isEditing = false;
-
-  constructor(private readonly todoList: TodoList) {
+  constructor(private readonly todoItemService: TodoItemService) {
     super();
   }
 
-  @computed
-  get id() {
-    return this.todoItem.data.id;
+  $editText = this.editText.asObservable();
+
+  setEditText(value: string) {
+    this.editText.next(value);
   }
 
-  @computed
-  get description() {
-    return this.todoItem.data.description;
+  $isEditing = this.isEditing.asObservable();
+
+  get todoItem() {
+    return this.$props.value.todoItem;
   }
 
-  @computed
-  get isComplete() {
-    return this.todoItem.data.isComplete;
-  }
-
-  @action
   startEditing() {
-    this.editText = this.description;
-    this.isEditing = true;
+    this.editText.next(this.todoItem.task);
+    this.isEditing.next(true);
   }
 
-  @action
-  commitEditText() {
-    this.todoItem.updateDescription(this.editText);
-    this.editText = '';
-    this.isEditing = false;
+  async commitEditText() {
+    await this.todoItemService.updateItem.execute({
+      id: this.todoItem.id,
+      input: {
+        task: this.editText.value,
+      } as any,
+    });
+
+    this.editText.next('');
+    this.isEditing.next(false);
   }
 
-  @action
-  toggleComplete() {
-    this.todoItem.toggleComplete();
+  async toggleComplete() {
+    await this.todoItemService.updateItem.execute({
+      id: this.todoItem.id,
+      input: {
+        done: !this.todoItem.done,
+      } as any,
+    });
   }
 
-  @action
-  deleteItem() {
-    this.todoList.deleteItem(this.todoItem);
-  }
-
-  protected initialize() {
-    this.todoItem = this.props.todoItem;
+  async deleteItem() {
+    await this.todoItemService.deleteItem.execute({
+      id: this.todoItem.id,
+    });
   }
 }

@@ -1,0 +1,5 @@
+fragment TodoItemFields on Todo {
+  id
+  task
+  done
+}

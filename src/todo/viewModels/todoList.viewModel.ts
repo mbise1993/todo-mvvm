@@ -1,9 +1,11 @@
-import { action, computed } from 'mobx';
 import { injectable } from 'inversify';
 
+import { combineLatest } from 'rxjs';
 import { Filter } from '../../common/utils/filiter';
-import { TodoItem } from '../models/todoItem.model';
-import { TodoList } from '../models/todoList.model';
+import { map } from 'rxjs/operators';
+import { TodoItemFields } from '../api/todoItemFields.generated';
+import { TodoItemService } from '../services/todoItem.service';
+import { TodoListService } from '../services/todoList.service';
 import { ViewModel } from '../../common/viewModels';
 
 interface Props {
@@ -12,24 +14,32 @@ interface Props {
 
 @injectable()
 export class TodoListViewModel extends ViewModel<Props> {
-  constructor(private todoList: TodoList) {
+  constructor(
+    private readonly todoListService: TodoListService,
+    private readonly todoItemService: TodoItemService,
+  ) {
     super();
   }
 
-  @computed
-  get items() {
-    switch (this.props.filter) {
-      case 'active':
-        return this.todoList.items.filter(item => !item.data.isComplete);
-      case 'completed':
-        return this.todoList.items.filter(item => item.data.isComplete);
-      default:
-        return this.todoList.items;
-    }
+  $filteredItems = combineLatest([this.todoListService.items, this.$props]).pipe(
+    map(([items, props]) => this.filterItems(items, props.filter)),
+  );
+
+  async deleteItem(itemId: string) {
+    await this.todoItemService.deleteItem.execute({
+      id: itemId,
+    });
   }
 
-  @action
-  deleteItem(item: TodoItem) {
-    this.todoList.deleteItem(item);
+  private filterItems(items: TodoItemFields[], filter: Filter) {
+    return items.filter(item => {
+      if (filter === 'active') {
+        return !item.done;
+      } else if (filter === 'completed') {
+        return item.done;
+      } else {
+        return items;
+      }
+    });
   }
 }

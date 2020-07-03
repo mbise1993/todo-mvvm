@@ -1,14 +1,14 @@
-export abstract class ViewModel<TProps = unknown> {
-  private _props!: TProps;
+import { BehaviorSubject } from 'rxjs';
+import { first } from 'rxjs/operators';
 
-  get props() {
-    return this._props;
+export abstract class ViewModel<TProps = void> {
+  $props = new BehaviorSubject<TProps>({} as TProps);
+
+  constructor() {
+    this.$props.pipe(first()).subscribe(value => this.onInit(value));
   }
 
-  set props(props: TProps) {
-    this._props = props;
-    this.initialize();
-  }
+  onInit(props: TProps) {}
 
-  protected initialize() {}
+  dispose() {}
 }
